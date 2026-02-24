@@ -1,0 +1,76 @@
+import { httpClient } from '@/core/http/httpClient'
+import { useAuthStore } from '@/stores/auth.store'
+
+interface RegisterPayload {
+  name: string
+  email: string
+  password: string
+}
+
+interface LoginPayload {
+  email: string
+  password: string
+}
+
+interface LoginResponse {
+  token: string
+  user: {
+    id: string
+    name: string
+    email: string
+  }
+}
+
+interface MeResponse {
+  id: string
+  name: string
+  email: string
+  cards: unknown[]
+}
+
+export const authService = {
+  async register(payload: RegisterPayload) {
+    return httpClient.post<{ userId: string }>('/register', payload)
+  },
+
+  async login(payload: LoginPayload) {
+    const authStore = useAuthStore()
+
+    authStore.setLoading(true)
+    authStore.setError(null)
+
+    try {
+      const response = await httpClient.post<LoginResponse>('/login', payload)
+
+      authStore.setAuth(response.token, response.user)
+
+      return response
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Erro ao fazer login'
+
+      authStore.setError(message)
+      throw error
+    } finally {
+      authStore.setLoading(false)
+    }
+  },
+
+  async getMe() {
+    const authStore = useAuthStore()
+
+    try {
+      const user = await httpClient.get<MeResponse>('/me')
+      authStore.user = {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
+
+      return user
+    } catch (error) {
+      authStore.logout()
+      throw error
+    }
+  }
+}
