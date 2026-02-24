@@ -1,3 +1,3 @@
 <template>
-  <div>Login</div>
+  <div>Create Trade Page</div>
 </template>

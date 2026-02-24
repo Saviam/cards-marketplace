@@ -15,23 +15,31 @@ interface AuthState {
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
-    user: null,
+    user: JSON.parse(localStorage.getItem('user') || 'null'),
     token: localStorage.getItem('token'),
     loading: false,
     error: null
   }),
 
+  getters: {
+    isAuthenticated: (state) => !!state.token
+  },
+
   actions: {
     setAuth(token: string, user: User) {
       this.token = token
       this.user = user
+
       localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
     },
 
     logout() {
       this.user = null
       this.token = null
+
       localStorage.removeItem('token')
+      localStorage.removeItem('user')
     },
 
     setLoading(value: boolean) {
