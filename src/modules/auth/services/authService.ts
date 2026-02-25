@@ -29,10 +29,12 @@ interface MeResponse {
 }
 
 export const authService = {
-  async register(payload: RegisterPayload) {
-    return httpClient.post<{ userId: string }>('/register', payload)
-  },
-
+ async register(payload: RegisterPayload) {
+  console.log('[DEBUG] Register payload:', payload)
+  const response = await httpClient.post<{ userId: string }>('/register', payload)
+  console.log('[DEBUG] Register response:', response)
+  return response
+},
   async login(payload: LoginPayload) {
     const authStore = useAuthStore()
 
@@ -42,12 +44,20 @@ export const authService = {
     try {
       const response = await httpClient.post<LoginResponse>('/login', payload)
 
+      console.log('[DEBUG] Login response:', response)
+
+      if (!response.token || !response.user) {
+        throw new Error('Resposta inválida da API')
+      }
+
       authStore.setAuth(response.token, response.user)
 
       return response
     } catch (error: unknown) {
+      console.error('[DEBUG] Login error:', error)
+
       const message =
-        error instanceof Error ? error.message : 'Erro ao fazer login'
+        error instanceof Error ? error.message : 'Email ou senha inválidos'
 
       authStore.setError(message)
       throw error
@@ -61,6 +71,7 @@ export const authService = {
 
     try {
       const user = await httpClient.get<MeResponse>('/me')
+
       authStore.user = {
         id: user.id,
         name: user.name,
@@ -69,6 +80,7 @@ export const authService = {
 
       return user
     } catch (error) {
+      console.error('[DEBUG] getMe error:', error)
       authStore.logout()
       throw error
     }

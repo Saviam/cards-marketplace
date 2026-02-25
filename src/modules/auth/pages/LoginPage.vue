@@ -37,7 +37,7 @@ async function handleLogin() {
       password: password.value
     })
 
-    router.push('/')
+    router.push('/marketplace')
   } catch {
     // erro já tratado na store
   }
