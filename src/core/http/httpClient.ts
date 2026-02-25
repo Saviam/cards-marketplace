@@ -26,10 +26,16 @@ async function request<T>(
       const error = await response.json()
       message = error?.message || message
     } catch {
-      // ignore
+      // ignore se não for JSON
     }
 
     throw new Error(message)
+  }
+
+  // ✅ Verifica se tem conteúdo antes de tentar parsear JSON
+  const contentLength = response.headers.get('content-length')
+  if (contentLength === '0' || response.status === 204) {
+    return {} as T  // Retorna objeto vazio tipado como T
   }
 
   return response.json()
