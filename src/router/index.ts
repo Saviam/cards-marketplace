@@ -24,7 +24,7 @@ const router = createRouter({
           path: 'marketplace',
           name: 'marketplace',
           component: () => import('@/modules/trades/pages/MarketplacePage.vue'),
-          meta: { requiresAuth: true }
+          meta: { requiresAuth: false }
         },
         {
           path: 'minhas-cartas',
