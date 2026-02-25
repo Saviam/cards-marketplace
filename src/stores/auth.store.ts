@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { cacheService } from '@/core/cache/cacheService'
 
 interface User {
   id: string
@@ -18,11 +19,11 @@ export const useAuthStore = defineStore('auth', {
     user: JSON.parse(localStorage.getItem('user') || 'null'),
     token: localStorage.getItem('token'),
     loading: false,
-    error: null
+    error: null,
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.token
+    isAuthenticated: (state) => !!state.token,
   },
 
   actions: {
@@ -40,6 +41,8 @@ export const useAuthStore = defineStore('auth', {
 
       localStorage.removeItem('token')
       localStorage.removeItem('user')
+
+      cacheService.clear() // ✅ Limpa cache ao sair
     },
 
     setLoading(value: boolean) {
@@ -48,6 +51,6 @@ export const useAuthStore = defineStore('auth', {
 
     setError(message: string | null) {
       this.error = message
-    }
-  }
+    },
+  },
 })

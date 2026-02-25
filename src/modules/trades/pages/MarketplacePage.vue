@@ -62,6 +62,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { httpClient } from '@/core/http/httpClient'
+import { cacheService } from '@/core/cache/cacheService'
 
 interface TradeCard {
   id: string
@@ -99,7 +100,18 @@ const page = ref(1)
 const more = ref(false)
 const RPP = 10
 
+
 async function fetchTrades() {
+  const cacheKey = `trades:page:${page.value}`
+  
+  // Tenta pegar do cache primeiro
+  const cached = cacheService.get<TradesResponse>(cacheKey)
+  if (cached) {
+    trades.value = cached.list
+    more.value = cached.more
+    return
+  }
+
   loading.value = true
   error.value = null
 
@@ -107,6 +119,9 @@ async function fetchTrades() {
     const response = await httpClient.get<TradesResponse>(`/trades?page=${page.value}&rpp=${RPP}`)
     trades.value = response.list
     more.value = response.more
+    
+    // Salva no cache
+    cacheService.set(cacheKey, response)
   } catch (e) {
     error.value = 'Erro ao carregar solicitações. Tente novamente.'
     console.error('Erro fetch trades:', e)
@@ -115,28 +130,19 @@ async function fetchTrades() {
   }
 }
 
+// Invalida cache após deletar trade
 async function deleteTrade(tradeId: string) {
   if (!confirm('Confirmar exclusão desta solicitação?')) return
 
   try {
-    console.log('[DEBUG] Tentando deletar trade:', tradeId)
-    console.log('[DEBUG] Token:', localStorage.getItem('token')?.substring(0, 20) + '...')
-    
     await httpClient.delete(`/trades/${tradeId}`)
-    
-    console.log('[DEBUG] Trade deletado com sucesso')
     trades.value = trades.value.filter(t => t.id !== tradeId)
-    alert('Solicitação excluída com sucesso!')
+    
+    // Invalida cache dos trades
+    cacheService.remove(`trades:page:${page.value}`)
   } catch (e) {
-    console.error('[DEBUG] Erro ao deletar:', e)
-    
-    // Tenta pegar mensagem de erro específica
-    let errorMsg = 'Erro ao excluir solicitação'
-    if (e instanceof Error) {
-      errorMsg = e.message
-    }
-    
-    alert(`${errorMsg}\n\nVerifique:\n1. Se você é o dono da solicitação\n2. Se está logado\n3. Se a API está respondendo`)
+    alert('Erro ao excluir solicitação')
+    console.error('Erro delete trade:', e)
   }
 }
 

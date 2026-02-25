@@ -83,7 +83,7 @@
 import { ref, onMounted, watch } from 'vue'
 
 import { httpClient } from '@/core/http/httpClient'
-
+import { cacheService } from '@/core/cache/cacheService'
 
 interface Card {
   id: string
@@ -113,12 +113,21 @@ const availableCards = ref<Card[]>([])
 const selectedCards = ref<string[]>([])
 
 async function fetchMyCards() {
+  const cacheKey = 'my-cards'
+  
+  const cached = cacheService.get<Card[]>(cacheKey)
+  if (cached) {
+    myCards.value = cached
+    return
+  }
+
   loading.value = true
   error.value = null
 
   try {
     const cards = await httpClient.get<Card[]>('/me/cards')
     myCards.value = cards
+    cacheService.set(cacheKey, cards)
   } catch (e) {
     error.value = 'Erro ao carregar suas cartas. Tente novamente.'
     console.error('Erro fetch my cards:', e)
@@ -166,18 +175,22 @@ async function addCardsToCollection() {
       cardIds: selectedCards.value
     })
 
+    // Invalida cache
+    cacheService.remove('my-cards')
+    
     await fetchMyCards()
     showAddModal.value = false
     searchQuery.value = ''
     availableCards.value = []
     selectedCards.value = []
-
+    
     alert('Carta(s) adicionada(s) com sucesso!')
   } catch (e) {
     alert('Erro ao adicionar carta(s)')
     console.error('Erro add cards:', e)
   }
 }
+
 // Carrega todas as cartas quando modal abre
 watch(showAddModal, async (newValue) => {
   if (newValue) {

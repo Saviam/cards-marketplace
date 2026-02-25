@@ -110,6 +110,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { httpClient } from '@/core/http/httpClient'
+import { cacheService } from '@/core/cache/cacheService'
 
 interface Card {
   id: string
@@ -159,10 +160,20 @@ async function initializePage() {
   error.value = null
 
   try {
-    // Carrega cartas do usuário
     const [myCardsRes, allCardsRes] = await Promise.all([
       httpClient.get<Card[]>('/me/cards'),
-      httpClient.get<CardsListResponse>('/cards?page=1&rpp=50')
+      
+      // Cache do catálogo de cartas
+      (() => {
+        const cached = cacheService.get<CardsListResponse>('cards-catalog')
+        if (cached) return Promise.resolve(cached)
+        
+        return httpClient.get<CardsListResponse>('/cards?page=1&rpp=50')
+          .then(res => {
+            cacheService.set('cards-catalog', res)
+            return res
+          })
+      })()
     ])
 
     myCards.value = myCardsRes
