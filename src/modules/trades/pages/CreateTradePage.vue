@@ -1,461 +1,198 @@
 <template>
-  <div class="create-trade-page">
-    <h1>Nova Solicitação de Troca</h1>
-
-    <!-- Loading inicial -->
-    <div v-if="loading" class="loading">Carregando cartas...</div>
-
-    <!-- Erro -->
-    <div v-else-if="error" class="error">
-      {{ error }}
-      <button @click="initializePage">Tentar novamente</button>
+  <div class="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto w-full">
+    <div class="text-center mb-10">
+      <h1 class="text-4xl font-bold text-neutral-900 mb-3">Nova Troca</h1>
+      <p class="text-neutral-500 text-lg max-w-2xl mx-auto">
+        Selecione as cartas que você quer oferecer e as que deseja receber
+      </p>
     </div>
 
-    <!-- Conteúdo -->
-    <div v-else class="trade-form">
-      <!-- Seção: Cartas que vou oferecer -->
-      <section class="trade-section">
-        <h2>1. Selecione as cartas que vai OFERECER</h2>
-        <p class="section-hint">Cartas da sua coleção</p>
-
-        <div v-if="myCards.length === 0" class="no-cards">
-          Você não tem cartas. 
-          <router-link to="/minhas-cartas">Adicione cartas primeiro</router-link>
-        </div>
-
-        <div v-else class="cards-selection">
-          <div 
-            v-for="card in myCards" 
-            :key="card.id" 
-            class="card-selectable"
-            :class="{ selected: offeringCards.includes(card.id) }"
-            @click="toggleOffering(card.id)"
-          >
-            <img :src="card.imageUrl" :alt="card.name" class="card-thumb" />
-            <div class="card-info">
-              <strong>{{ card.name }}</strong>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <!-- Você Oferece -->
+      <div class="bg-white rounded-2xl shadow-lg shadow-neutral-200/50 border border-neutral-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-primary-50 to-primary-100 px-6 py-4 border-b border-primary-200">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
+                <i class="pi pi-arrow-up text-white"></i>
+              </div>
+              <div>
+                <h2 class="font-bold text-neutral-900">Você Oferece</h2>
+                <p class="text-sm text-neutral-500">{{ selectedOffering.length }} carta(s) selecionada(s)</p>
+              </div>
             </div>
-            <div v-if="offeringCards.includes(card.id)" class="checkmark">✓</div>
           </div>
         </div>
-      </section>
 
-      <!-- Seção: Cartas que quero receber -->
-      <section class="trade-section">
-        <h2>2. Selecione as cartas que vai RECEBER</h2>
-        <p class="section-hint">Cartas disponíveis no sistema</p>
-
-        <div class="search-box">
-          <input 
-            v-model="searchQuery" 
-            @input="debouncedSearch"
-            type="text" 
-            placeholder="Buscar cartas..."
-          />
-        </div>
-
-        <div v-if="searching" class="searching">Buscando...</div>
-
-        <div v-else-if="availableCards.length === 0" class="no-cards">
-          {{ searchQuery ? 'Nenhuma carta encontrada.' : 'Digite para buscar cartas.' }}
-        </div>
-
-        <div v-else class="cards-selection">
-          <div 
-            v-for="card in availableCards" 
-            :key="card.id" 
-            class="card-selectable"
-            :class="{ selected: receivingCards.includes(card.id) }"
-            @click="toggleReceiving(card.id)"
-          >
-            <img :src="card.imageUrl" :alt="card.name" class="card-thumb" />
-            <div class="card-info">
-              <strong>{{ card.name }}</strong>
+        <div class="p-6">
+          <div class="mb-4">
+            <div class="relative">
+              <i class="pi pi-search absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+              <input
+                v-model="searchOfferingQuery"
+                @input="debouncedSearch('offering')"
+                type="text"
+                placeholder="Buscar suas cartas..."
+                class="w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all text-neutral-900 placeholder-neutral-400"
+              />
             </div>
-            <div v-if="receivingCards.includes(card.id)" class="checkmark">✓</div>
+          </div>
+
+          <div v-if="myCards.length === 0" class="text-center py-8">
+            <i class="pi pi-inbox text-4xl text-neutral-300 mb-3"></i>
+            <p class="text-neutral-500">Você não tem cartas</p>
+            <router-link to="/minhas-cartas" class="text-primary-600 font-medium hover:text-primary-700 mt-2 inline-block">
+              Adicionar cartas
+            </router-link>
+          </div>
+
+          <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-80 overflow-y-auto pr-2">
+            <div
+              v-for="card in myCards"
+              :key="card.id"
+              class="relative border-2 rounded-xl cursor-pointer transition-all duration-200 overflow-hidden"
+              :class="selectedOffering.includes(card.id) ? 'border-primary-500 bg-primary-50 shadow-md' : 'border-neutral-200 hover:border-primary-300'"
+              @click="toggleOffering(card.id)"
+            >
+              <img :src="card.imageUrl" :alt="card.name" class="w-full h-32 object-cover" />
+              <div class="p-2">
+                <p class="text-xs font-semibold text-neutral-900 line-clamp-1">{{ card.name }}</p>
+              </div>
+              <div
+                v-if="selectedOffering.includes(card.id)"
+                class="absolute top-2 right-2 w-6 h-6 bg-primary-600 rounded-full flex items-center justify-center text-white"
+              >
+                <i class="pi pi-check text-xs"></i>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <!-- Resumo e Submit -->
-      <section class="trade-summary">
-        <h2>Resumo</h2>
-        <div class="summary-content">
-          <div>
-            <strong>Oferecendo:</strong> {{ offeringCards.length }} carta(s)
-          </div>
-          <div>
-            <strong>Recebendo:</strong> {{ receivingCards.length }} carta(s)
+      <!-- Você Recebe -->
+      <div class="bg-white rounded-2xl shadow-lg shadow-neutral-200/50 border border-neutral-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-accent-50 to-accent-100 px-6 py-4 border-b border-accent-200">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-accent-500 rounded-full flex items-center justify-center">
+                <i class="pi pi-arrow-down text-white"></i>
+              </div>
+              <div>
+                <h2 class="font-bold text-neutral-900">Você Recebe</h2>
+                <p class="text-sm text-neutral-500">{{ selectedReceiving.length }} carta(s) selecionada(s)</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="actions">
-          <button 
-            @click="submitTrade" 
-            :disabled="!canSubmit || submitting"
-            class="btn-submit"
-          >
-            {{ submitting ? 'Enviando...' : 'Criar Solicitação de Troca' }}
-          </button>
-          <router-link to="/marketplace" class="btn-cancel">Cancelar</router-link>
-        </div>
+        <div class="p-6">
+          <div class="mb-4">
+            <div class="relative">
+              <i class="pi pi-search absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+              <input
+                v-model="searchReceivingQuery"
+                @input="debouncedSearch('receiving')"
+                type="text"
+                placeholder="Buscar cartas do marketplace..."
+                class="w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-200 focus:border-accent-500 focus:ring-2 focus:ring-accent-200 outline-none transition-all text-neutral-900 placeholder-neutral-400"
+              />
+            </div>
+          </div>
 
-        <p v-if="submitError" class="submit-error">{{ submitError }}</p>
-      </section>
+          <div v-if="searching" class="text-center py-8">
+            <PProgressBar mode="indeterminate" class="h-1 max-w-xs mx-auto" />
+            <p class="text-neutral-500 text-sm mt-3">Buscando...</p>
+          </div>
+
+          <div v-else-if="availableCards.length > 0" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto pr-2">
+            <div
+              v-for="card in availableCards"
+              :key="card.id"
+              class="relative border-2 rounded-xl cursor-pointer transition-all duration-200 overflow-hidden"
+              :class="selectedReceiving.includes(card.id) ? 'border-accent-500 bg-accent-50 shadow-md' : 'border-neutral-200 hover:border-accent-300'"
+              @click="toggleReceiving(card.id)"
+            >
+              <img :src="card.imageUrl" :alt="card.name" class="w-full h-32 object-cover" />
+              <div class="p-2">
+                <p class="text-xs font-semibold text-neutral-900 line-clamp-1">{{ card.name }}</p>
+              </div>
+              <div
+                v-if="selectedReceiving.includes(card.id)"
+                class="absolute top-2 right-2 w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center text-white"
+              >
+                <i class="pi pi-check text-xs"></i>
+              </div>
+            </div>
+          </div>
+
+          <div v-else-if="searchReceivingQuery" class="text-center py-8">
+            <i class="pi pi-search text-4xl text-neutral-300 mb-3"></i>
+            <p class="text-neutral-500">Nenhuma carta encontrada</p>
+          </div>
+
+          <div v-else class="text-center py-8">
+            <i class="pi pi-info-circle text-4xl text-neutral-300 mb-3"></i>
+            <p class="text-neutral-500">Digite para buscar cartas</p>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+      <PButton
+        label="Cancelar"
+        severity="secondary"
+        outlined
+        @click="resetForm"
+        class="w-full sm:w-auto rounded-xl"
+      />
+      <PButton
+        label="Criar Troca"
+        :loading="submitting"
+        :disabled="!selectedOffering.length || !selectedReceiving.length"
+        @click="submitTrade"
+        class="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 border-0 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-300"
+      />
+    </div>
+
+    <PToast />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { httpClient } from '@/core/http/httpClient'
-import { cacheService } from '@/core/cache/cacheService'
+import { onMounted } from 'vue'
+import { useCreateTrade } from '@/composables/useCreateTrade'
 
-interface Card {
-  id: string
-  name: string
-  description: string
-  imageUrl: string
-  createdAt: string
-}
-
-interface CardsListResponse {
-  list: Card[]
-  page: number
-  rpp: number
-  more: boolean
-}
-
-const router = useRouter()
-
-// Estado
-const loading = ref(false)
-const error = ref<string | null>(null)
-const myCards = ref<Card[]>([])
-const availableCards = ref<Card[]>([])
-
-// Seleção
-const offeringCards = ref<string[]>([])
-const receivingCards = ref<string[]>([])
-
-// Busca
-const searchQuery = ref('')
-const searching = ref(false)
-let searchTimeout: ReturnType<typeof setTimeout> | null = null
-
-// Submit
-const submitting = ref(false)
-const submitError = ref<string | null>(null)
-
-// Computed manual
-const canSubmit = ref(false)
-
-function updateCanSubmit() {
-  canSubmit.value = offeringCards.value.length > 0 && receivingCards.value.length > 0
-}
-
-async function initializePage() {
-  loading.value = true
-  error.value = null
-
-  try {
-    const [myCardsRes, allCardsRes] = await Promise.all([
-      httpClient.get<Card[]>('/me/cards'),
-      
-      // Cache do catálogo de cartas
-      (() => {
-        const cached = cacheService.get<CardsListResponse>('cards-catalog')
-        if (cached) return Promise.resolve(cached)
-        
-        return httpClient.get<CardsListResponse>('/cards?page=1&rpp=50')
-          .then(res => {
-            cacheService.set('cards-catalog', res)
-            return res
-          })
-      })()
-    ])
-
-    myCards.value = myCardsRes
-    availableCards.value = allCardsRes.list
-  } catch (e) {
-    error.value = 'Erro ao carregar cartas. Tente novamente.'
-    console.error('Erro initialize:', e)
-  } finally {
-    loading.value = false
-  }
-}
-
-function toggleOffering(cardId: string) {
-  const index = offeringCards.value.indexOf(cardId)
-  if (index > -1) {
-    offeringCards.value.splice(index, 1)
-  } else {
-    offeringCards.value.push(cardId)
-  }
-  updateCanSubmit()
-}
-
-function toggleReceiving(cardId: string) {
-  const index = receivingCards.value.indexOf(cardId)
-  if (index > -1) {
-    receivingCards.value.splice(index, 1)
-  } else {
-    receivingCards.value.push(cardId)
-  }
-  updateCanSubmit()
-}
-
-function debouncedSearch() {
-  if (searchTimeout) clearTimeout(searchTimeout)
-  
-  searchTimeout = setTimeout(() => {
-    searchCards()
-  }, 300)
-}
-
-async function searchCards() {
-  if (!searchQuery.value.trim()) {
-    availableCards.value = []
-    return
-  }
-
-  searching.value = true
-  
-  try {
-    const response = await httpClient.get<CardsListResponse>('/cards?page=1&rpp=50')
-    
-    availableCards.value = response.list.filter(card =>
-      card.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    )
-  } catch (e) {
-    console.error('Erro search:', e)
-    availableCards.value = []
-  } finally {
-    searching.value = false
-  }
-}
-
-async function submitTrade() {
-  if (!canSubmit.value) return
-
-  submitting.value = true
-  submitError.value = null
-
-  try {
-    const tradeCards = [
-      ...offeringCards.value.map(id => ({ cardId: id, type: 'OFFERING' })),
-      ...receivingCards.value.map(id => ({ cardId: id, type: 'RECEIVING' }))
-    ]
-
-    await httpClient.post('/trades', { cards: tradeCards })
-
-    alert('Solicitação de troca criada com sucesso!')
-    router.push('/marketplace')
-  } catch (e) {
-    submitError.value = 'Erro ao criar solicitação. Tente novamente.'
-    console.error('Erro submit trade:', e)
-  } finally {
-    submitting.value = false
-  }
-}
+const {
+  submitting,
+  myCards,
+  availableCards,
+  selectedOffering,
+  selectedReceiving,
+  searchOfferingQuery,
+  searchReceivingQuery,
+  searching,
+  fetchMyCards,
+  loadAllAvailableCards,
+  debouncedSearch,
+  toggleOffering,
+  toggleReceiving,
+  submitTrade,
+  resetForm
+} = useCreateTrade()
 
 onMounted(() => {
-  initializePage()
+  fetchMyCards()
+  loadAllAvailableCards()
 })
 </script>
 
 <style scoped>
-.create-trade-page {
-  padding: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.loading, .error {
-  text-align: center;
-  padding: 2rem;
-}
-
-.error {
-  color: #dc2626;
-}
-
-.trade-form {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
-
-.trade-section h2 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.25rem;
-  color: #333;
-}
-
-.section-hint {
-  margin: 0 0 1rem 0;
-  color: #666;
-  font-size: 0.875rem;
-}
-
-.no-cards {
-  padding: 1rem;
-  background: #f5f5f5;
-  border-radius: 6px;
-  color: #666;
-}
-
-.no-cards a {
-  color: #4f46e5;
-}
-
-.cards-selection {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.card-selectable {
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  padding: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  background: #fff;
-}
-
-.card-selectable:hover {
-  border-color: #4f46e5;
-}
-
-.card-selectable.selected {
-  border-color: #4f46e5;
-  background: #eef2ff;
-}
-
-.card-thumb {
-  width: 100%;
-  height: 140px;
-  object-fit: cover;
-  border-radius: 4px;
-  background: #f5f5f5;
-  margin-bottom: 0.5rem;
-}
-
-.card-info strong {
-  font-size: 0.875rem;
-  color: #333;
+.line-clamp-1 {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.checkmark {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: #4f46e5;
-  color: white;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.875rem;
-}
-
-.search-box input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
-  margin-bottom: 1rem;
-}
-
-.searching {
-  text-align: center;
-  padding: 1rem;
-  color: #666;
-}
-
-.trade-summary {
-  background: #f9fafb;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 1.5rem;
-}
-
-.trade-summary h2 {
-  margin: 0 0 1rem 0;
-  font-size: 1.25rem;
-}
-
-.summary-content {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: #fff;
-  border-radius: 6px;
-}
-
-.actions {
-  display: flex;
-  gap: 1rem;
-}
-
-.btn-submit {
-  background: #4f46e5;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-.btn-submit:hover:not(:disabled) {
-  background: #4338ca;
-}
-
-.btn-submit:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.btn-cancel {
-  background: #fff;
-  border: 1px solid #ddd;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  color: #333;
-  text-decoration: none;
-}
-
-.submit-error {
-  margin-top: 1rem;
-  color: #dc2626;
-  font-size: 0.875rem;
-}
-
-@media (max-width: 768px) {
-  .cards-selection {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  }
-  
-  .summary-content {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .actions {
-    flex-direction: column;
-  }
 }
 </style>
