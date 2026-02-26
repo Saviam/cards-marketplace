@@ -1,452 +1,233 @@
 <template>
-  <div class="my-cards-page">
-    <h1>Minhas Cartas</h1>
-
-    <div v-if="loading" class="loading">Carregando...</div>
-
-    <div v-else-if="error" class="error">
-      {{ error }}
-      <button @click="fetchMyCards">Tentar novamente</button>
+  <div class="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto w-full">
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 text-center sm:text-left">
+      <h1 class="text-3xl font-bold text-neutral-900">Minhas Cartas</h1>
+      <PButton
+        label="+ Adicionar Carta"
+        icon="pi pi-plus"
+        @click="openModal"
+        class="bg-gradient-to-r from-primary-600 to-primary-500 border-0 shadow-lg shadow-primary-500/30"
+      />
     </div>
 
-    <div v-else>
+    <div v-if="loading" class="text-center py-16">
+      <PProgressBar mode="indeterminate" class="h-1 max-w-md mx-auto" />
+      <p class="text-neutral-500 mt-4 font-medium">Carregando suas cartas...</p>
+    </div>
 
-      <button @click="showAddModal = true" class="btn-add">
-        + Adicionar Carta
-      </button>
+    <EmptyState
+      v-else-if="error"
+      title="Ops! Algo deu errado"
+      :description="error"
+      icon="pi pi-exclamation-triangle"
+    >
+      <template #actions>
+        <PButton
+          label="Tentar novamente"
+          @click="refresh"
+          class="bg-gradient-to-r from-primary-600 to-primary-500 border-0"
+        />
+      </template>
+    </EmptyState>
 
-      <!-- Lista de cartas -->
-      <div v-if="myCards.length === 0" class="empty">
-        Você ainda não tem cartas. Clique em "Adicionar Carta" para começar.
-      </div>
+    <EmptyState
+      v-else-if="!cards?.length"
+      title="Sua coleção está vazia"
+      description="Comece adicionando cartas para criar trocas no marketplace"
+      icon="pi pi-inbox"
+    >
+      <template #actions>
+        <PButton
+          label="Adicionar Primeira Carta"
+          @click="openModal"
+          class="bg-gradient-to-r from-primary-600 to-primary-500 border-0 shadow-lg shadow-primary-500/30"
+        />
+      </template>
+    </EmptyState>
 
-      <div v-else class="cards-grid">
-        <div v-for="card in myCards" :key="card.id" class="card-item">
-          <img :src="card.imageUrl" :alt="card.name" class="card-image" />
-          <div class="card-info">
-            <h3>{{ card.name }}</h3>
-            <p class="card-description">{{ card.description }}</p>
-            <span class="card-date">Adicionada em: {{ formatDate(card.createdAt) }}</span>
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
+      <PCard
+        v-for="card in cards"
+        :key="card.id"
+        class="w-full max-w-sm hover:shadow-xl transition-all duration-300 border-0 rounded-xl overflow-hidden group"
+      >
+        <template #header>
+          <div class="relative overflow-hidden">
+            <img
+              :src="card.imageUrl"
+              :alt="card.name"
+              class="w-full h-72 object-cover transform group-hover:scale-105 transition-transform duration-300"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
-        </div>
-      </div>
+        </template>
+        <template #title>
+          <h3 class="font-semibold text-neutral-900 text-lg line-clamp-1">{{ card.name }}</h3>
+        </template>
+        <template #content>
+          <div class="flex items-center gap-2 text-sm text-neutral-500">
+            <i class="pi pi-calendar text-xs"></i>
+            <span>Adicionada em {{ formatDate(card.createdAt) }}</span>
+          </div>
+        </template>
+      </PCard>
     </div>
 
-    <!-- Modal de Adicionar Carta -->
-    <div v-if="showAddModal" class="modal-overlay" @click.self="showAddModal = false">
-      <div class="modal">
-        <h2>Adicionar Carta</h2>
-
-        <div class="search-box">
-          <input v-model="searchQuery" @input="searchCards" type="text" placeholder="Buscar cartas disponíveis..." />
+    <PDialog
+      v-model:visible="modalVisible"
+      modal
+      header="Adicionar Carta"
+      :style="{ width: '50rem' }"
+      :breakpoints="{ '768px': '95vw' }"
+      class="rounded-xl"
+    >
+      <div class="space-y-4 -mx-2">
+        <div class="px-2">
+          <PInputText
+            v-model="searchQuery"
+            @input="debouncedSearch"
+            placeholder="Buscar cartas disponíveis..."
+            class="w-full rounded-lg"
+          />
         </div>
 
-        <div v-if="searching" class="searching">Buscando...</div>
+        <div v-if="searching" class="text-center py-8">
+          <PProgressBar mode="indeterminate" class="h-1 max-w-xs mx-auto" />
+          <p class="text-neutral-500 text-sm mt-3">Buscando cartas...</p>
+        </div>
 
-        <div v-else-if="availableCards.length > 0" class="available-cards">
-          <div v-for="card in availableCards" :key="card.id" class="available-card"
-            :class="{ selected: selectedCards.includes(card.id) }" @click="toggleCardSelection(card.id)">
-            <img :src="card.imageUrl" :alt="card.name" class="card-thumb" />
-            <div class="card-details">
-              <strong>{{ card.name }}</strong>
-              <span>{{ card.description }}</span>
+        <div
+          v-else-if="availableCards?.length"
+          class="space-y-2 max-h-96 overflow-y-auto pr-2 px-2"
+        >
+          <div
+            v-for="card in availableCards"
+            :key="card.id"
+            class="flex items-center gap-4 p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md"
+            :class="selectedCards.includes(card.id) ? 'border-primary-500 bg-primary-50 shadow-md' : 'border-neutral-200 hover:border-primary-300'"
+            @click="toggleSelection(card.id)"
+          >
+            <img
+              :src="card.imageUrl"
+              :alt="card.name"
+              class="w-16 h-22 object-cover rounded-lg flex-shrink-0 shadow-sm"
+            />
+            <div class="flex-1 min-w-0">
+              <h4 class="font-semibold text-neutral-900 truncate">{{ card.name }}</h4>
+              <p class="text-sm text-neutral-500 line-clamp-2 mt-1">{{ card.description }}</p>
             </div>
+            <div
+              v-if="selectedCards.includes(card.id)"
+              class="w-9 h-9 bg-gradient-to-r from-primary-600 to-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0 shadow-lg shadow-primary-500/30"
+            >
+              <i class="pi pi-check text-sm font-bold"></i>
+            </div>
+            <div
+              v-else
+              class="w-9 h-9 border-2 border-neutral-300 rounded-full flex-shrink-0"
+            ></div>
           </div>
         </div>
 
-        <div v-else-if="searchQuery" class="no-results">
-          Nenhuma carta encontrada.
-        </div>
+        <EmptyState
+          v-else-if="searchQuery"
+          title="Nenhuma carta encontrada"
+          description="Tente buscar com outro termo"
+          icon="pi pi-search"
+        />
 
-        <div v-else class="no-results">
-          Digite para buscar ou aguarde o carregamento...
-        </div>
-
-      
-        <div v-if="availableCards.length > 0" class="modal-footer">
-          <div class="selected-count">
-            Selecionadas: {{ selectedCards.length }} carta(s)
-          </div>
-          <div class="modal-actions">
-            <button @click="addCardsToCollection" :disabled="selectedCards.length === 0" class="btn-confirm">
-              Adicionar {{ selectedCards.length > 0 ? selectedCards.length : '' }} carta(s)
-            </button>
-            <button @click="showAddModal = false" class="btn-cancel">Cancelar</button>
-          </div>
-        </div>
+        <EmptyState
+          v-else
+          title="Buscar cartas"
+          description="Digite para buscar cartas disponíveis no sistema"
+          icon="pi pi-search"
+        />
       </div>
-    </div>
+
+      <template #footer>
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 w-full pt-4 border-t border-neutral-200">
+          <span class="text-sm text-neutral-500 font-medium">
+            <span class="text-primary-600 font-bold">{{ selectedCards.length }}</span> carta(s) selecionada(s)
+          </span>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <PButton
+              label="Cancelar"
+              severity="secondary"
+              outlined
+              @click="closeModal"
+              class="flex-1 sm:flex-none rounded-lg"
+            />
+            <PButton
+              label="Adicionar"
+              :disabled="!selectedCards.length"
+              :loading="adding"
+              @click="confirmAdd"
+              class="flex-1 sm:flex-none bg-gradient-to-r from-primary-600 to-primary-500 border-0 rounded-lg shadow-lg shadow-primary-500/30"
+            />
+          </div>
+        </div>
+      </template>
+    </PDialog>
+
+    <PToast />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { onMounted, onActivated } from 'vue'
+import { useMyCards } from '@/composables/useMyCards'
 
-import { httpClient } from '@/core/http/httpClient'
-import { cacheService } from '@/core/cache/cacheService'
-
-interface Card {
-  id: string
-  name: string
-  description: string
-  imageUrl: string
-  createdAt: string
-}
-
-interface CardsListResponse {
-  list: Card[]
-  page: number
-  rpp: number
-  more: boolean
-}
-
-
-const myCards = ref<Card[]>([])
-const loading = ref(false)
-const error = ref<string | null>(null)
-
-
-const showAddModal = ref(false)
-const searchQuery = ref('')
-const searching = ref(false)
-const availableCards = ref<Card[]>([])
-const selectedCards = ref<string[]>([])
-
-async function fetchMyCards() {
-  const cacheKey = 'my-cards'
-  
-  const cached = cacheService.get<Card[]>(cacheKey)
-  if (cached) {
-    myCards.value = cached
-    return
-  }
-
-  loading.value = true
-  error.value = null
-
-  try {
-    const cards = await httpClient.get<Card[]>('/me/cards')
-    myCards.value = cards
-    cacheService.set(cacheKey, cards)
-  } catch (e) {
-    error.value = 'Erro ao carregar suas cartas. Tente novamente.'
-    console.error('Erro fetch my cards:', e)
-  } finally {
-    loading.value = false
-  }
-}
-
-async function searchCards() {
-  if (!searchQuery.value.trim()) {
-    availableCards.value = []
-    return
-  }
-
-  searching.value = true
-
-  try {
-
-    const response = await httpClient.get<CardsListResponse>(`/cards?page=1&rpp=20`)
-
-    availableCards.value = response.list.filter(card =>
-      card.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    )
-    selectedCards.value = []
-  } catch (e) {
-    console.error('Erro search cards:', e)
-    availableCards.value = []
-  } finally {
-    searching.value = false
-  }
-}
-
-function toggleCardSelection(cardId: string) {
-  const index = selectedCards.value.indexOf(cardId)
-  if (index > -1) {
-    selectedCards.value.splice(index, 1)
-  } else {
-    selectedCards.value.push(cardId)
-  }
-}
-
-async function addCardsToCollection() {
-  try {
-    await httpClient.post('/me/cards', {
-      cardIds: selectedCards.value
-    })
-
-    // Invalida cache
-    cacheService.remove('my-cards')
-    
-    await fetchMyCards()
-    showAddModal.value = false
-    searchQuery.value = ''
-    availableCards.value = []
-    selectedCards.value = []
-    
-    alert('Carta(s) adicionada(s) com sucesso!')
-  } catch (e) {
-    alert('Erro ao adicionar carta(s)')
-    console.error('Erro add cards:', e)
-  }
-}
-
-// Carrega todas as cartas quando modal abre
-watch(showAddModal, async (newValue) => {
-  if (newValue) {
-    try {
-      searching.value = true
-      const response = await httpClient.get<CardsListResponse>('/cards?page=1&rpp=100')
-      availableCards.value = response.list
-      selectedCards.value = []
-      searchQuery.value = ''
-    } catch (e) {
-      console.error('Erro ao carregar cartas:', e)
-      availableCards.value = []
-    } finally {
-      searching.value = false
-    }
-  } else {
-    availableCards.value = []
-    selectedCards.value = []
-    searchQuery.value = ''
-  }
-})
-
-function formatDate(date: string) {
-  return new Date(date).toLocaleDateString('pt-BR')
-}
+const {
+  cards,
+  loading,
+  error,
+  modalVisible,
+  searchQuery,
+  searching,
+  adding,
+  availableCards,
+  selectedCards,
+  openModal,
+  closeModal,
+  toggleSelection,
+  debouncedSearch,
+  confirmAdd,
+  refresh,
+  formatDate
+} = useMyCards()
 
 onMounted(() => {
-  fetchMyCards()
+  refresh()
+})
+
+onActivated(() => {
+  refresh()
 })
 </script>
 
 <style scoped>
-.my-cards-page {
-  padding: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.loading,
-.empty,
-.error {
-  text-align: center;
-  padding: 2rem;
-  color: #666;
-}
-
-.error {
-  color: #dc2626;
-}
-
-.btn-add {
-  background: #4f46e5;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-bottom: 1.5rem;
-}
-
-.btn-add:hover {
-  background: #4338ca;
-}
-
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.card-item {
-  border: 1px solid #ddd;
-  border-radius: 8px;
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  background: #fff;
-  transition: transform 0.2s;
 }
 
-.card-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.card-image {
-  width: 100%;
-  height: 400px;
-  object-fit: cover;
-  background: #f5f5f5;
+:deep(.p-dialog-header) {
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(135deg, #fafafa 0%, #f4f4f5 100%);
 }
 
-.card-info {
-  padding: 1rem;
-}
-
-.card-info h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.125rem;
-  color: #333;
-}
-
-.card-description {
-  margin: 0 0 0.75rem 0;
-  font-size: 0.875rem;
-  color: #666;
-  line-height: 1.4;
-}
-
-.card-date {
-  font-size: 0.75rem;
-  color: #999;
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-}
-
-.modal {
-  background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  max-width: 600px;
-  width: 100%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.modal h2 {
-  margin: 0 0 1rem 0;
-}
-
-.search-box input {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
-  margin-bottom: 1rem;
-}
-
-.searching,
-.no-results {
-  text-align: center;
-  padding: 1rem;
-  color: #666;
-}
-
-.available-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.available-card {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.available-card:hover {
-  border-color: #4f46e5;
-}
-
-.available-card.selected {
-  border-color: #4f46e5;
-  background: #eef2ff;
-}
-
-.card-thumb {
-  width: 50px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 4px;
-  background: #f5f5f5;
-}
-
-.card-details {
-  flex: 1;
-}
-
-.card-details strong {
-  display: block;
-  margin-bottom: 0.25rem;
-  color: #333;
-}
-
-.card-details span {
-  font-size: 0.875rem;
-  color: #666;
-}
-
-.btn-confirm {
-  background: #4f46e5;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.btn-confirm:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-
-.modal-footer {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #ddd;
-}
-
-.selected-count {
-  margin-bottom: 0.75rem;
-  font-size: 0.875rem;
-  color: #666;
-  text-align: center;
-}
-
-.btn-cancel {
-  background: #fff;
-  border: 1px solid #ddd;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-@media (max-width: 768px) {
-  .cards-grid {
-    grid-template-columns: 1fr;
-  }
+:deep(.p-dialog-content) {
+  border-radius: 0 0 14px 14px;
 }
 </style>

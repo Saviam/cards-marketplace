@@ -42,7 +42,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
 
-      cacheService.clear() // ✅ Limpa cache ao sair
+      cacheService.clear() 
     },
 
     setLoading(value: boolean) {

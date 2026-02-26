@@ -1,5 +1,6 @@
 <template>
   <router-view />
+  <PToast />
 </template>
 
 <script setup lang="ts">
