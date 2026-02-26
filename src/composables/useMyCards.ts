@@ -63,9 +63,22 @@ export function useMyCards() {
     }
   }
 
+  async function loadAllAvailableCards() {
+    searching.value = true
+    try {
+      const response = await httpClient.get<CardsListResponse>('/cards?page=1&rpp=100')
+      availableCards.value = response.list
+      selectedCards.value = []
+    } catch (e) {
+      availableCards.value = []
+    } finally {
+      searching.value = false
+    }
+  }
+
   async function searchAvailableCards() {
     if (!searchQuery.value.trim()) {
-      availableCards.value = []
+      await loadAllAvailableCards()
       return
     }
 
@@ -112,7 +125,6 @@ export function useMyCards() {
 
   function openModal() {
     modalVisible.value = true
-    searchAvailableCards()
   }
 
   function closeModal() {
@@ -130,8 +142,10 @@ export function useMyCards() {
     })
   }
 
-  watch(modalVisible, (val) => {
-    if (!val) {
+  watch(modalVisible, async (val) => {
+    if (val) {
+      await loadAllAvailableCards()
+    } else {
       searchQuery.value = ''
       availableCards.value = []
       selectedCards.value = []

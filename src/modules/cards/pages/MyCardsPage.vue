@@ -34,7 +34,7 @@
       v-else-if="!cards?.length"
       title="Sua coleção está vazia"
       description="Comece adicionando cartas para criar trocas no marketplace"
-      icon="pi pi-inbox"
+      icon="Vazio"
     >
       <template #actions>
         <PButton
