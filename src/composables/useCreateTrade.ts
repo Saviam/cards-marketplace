@@ -103,21 +103,29 @@ export function useCreateTrade() {
   }
 
   function toggleOffering(cardId: string) {
-    const idx = selectedOffering.value.indexOf(cardId)
-    idx > -1 ? selectedOffering.value.splice(idx, 1) : selectedOffering.value.push(cardId)
+  //  Seleção única: se já tem essa, remove; senão, limpa e adiciona essa
+  if (selectedOffering.value.includes(cardId)) {
+    selectedOffering.value = []
+  } else {
+    selectedOffering.value = [cardId]
   }
+}
 
-  function toggleReceiving(cardId: string) {
-    const idx = selectedReceiving.value.indexOf(cardId)
-    idx > -1 ? selectedReceiving.value.splice(idx, 1) : selectedReceiving.value.push(cardId)
+function toggleReceiving(cardId: string) {
+  //  Seleção única: se já tem essa, remove; senão, limpa e adiciona essa
+  if (selectedReceiving.value.includes(cardId)) {
+    selectedReceiving.value = []
+  } else {
+    selectedReceiving.value = [cardId]
   }
+}
 
   async function submitTrade() {
-  if (!selectedOffering.value.length || !selectedReceiving.value.length) {
+ if (selectedOffering.value.length !== 1 || selectedReceiving.value.length !== 1) {
     toast.add({
       severity: 'warn',
       summary: 'Atenção',
-      detail: 'Selecione pelo menos 1 carta para oferecer e 1 para receber',
+      detail: 'Selecione exatamente 1 carta para oferecer e 1 para receber',
       life: 3000
     })
     return
@@ -152,8 +160,8 @@ export function useCreateTrade() {
     toast.add({
       severity: 'error',
       summary: 'Erro',
-      detail: 'Erro ao criar troca. Tente novamente.',
-      life: 3000
+      detail: 'Erro ao criar troca. Selecione uma carta diferente da que você já tenha.',
+      life: 5000
     })
   } finally {
     submitting.value = false

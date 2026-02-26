@@ -3,7 +3,7 @@
     <div class="text-center mb-10">
       <h1 class="text-4xl font-bold text-neutral-900 mb-3">Nova Troca</h1>
       <p class="text-neutral-500 text-lg max-w-2xl mx-auto">
-        Selecione as cartas que você quer oferecer e as que deseja receber
+        Selecione a carta que você quer oferecer e a que deseja receber
       </p>
     </div>
 

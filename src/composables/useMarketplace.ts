@@ -5,9 +5,9 @@ import { useAuthStore } from '@/stores/auth.store'
 
 interface Trade {
   id: string
-  userId: string
-  user: {
-    id: string
+  userId: string  
+  user?: {
+    id?: string  
     name: string
   }
   tradeCards: Array<{
@@ -46,36 +46,37 @@ export function useMarketplace() {
   const more = ref(false)
   const deleting = ref<string | null>(null)
 
- async function fetchTrades(reset = false) {
-  console.log('🔵 [fetchTrades] Iniciando... reset:', reset)
-  
-  if (reset) page.value = 1
-  
-  loading.value = true
-  error.value = null
+  async function fetchTrades(reset = false) {
+    console.log('🔵 [fetchTrades] Iniciando... reset:', reset)
 
-  try {
-    console.log('🌐 [fetchTrades] Chamando API /trades?page=' + page.value)
-    const response = await httpClient.get<TradesResponse>(`/trades?page=${page.value}&rpp=12`)
-    console.log(' [fetchTrades] Resposta:', response)
-    
-    // if (response.list[0]?.tradeCards) {
-    //   console.log(' [fetchTrades] tradeCards[0]:', response.list[0].tradeCards[0])
-    //   console.log(' [fetchTrades] tradeCards[1]:', response.list[0].tradeCards[1])
-    //   console.log(' [fetchTrades] Array completo:', response.list[0].tradeCards)
-    // }
-    
-    trades.value = reset ? response.list : [...trades.value, ...response.list]
-    more.value = response.more
-    console.log(' [fetchTrades] Trades:', trades.value.length, 'More:', more.value)
-  } catch (e) {
-    console.error(' [fetchTrades] Erro:', e)
-    error.value = 'Erro ao carregar solicitações. Tente novamente.'
-  } finally {
-    loading.value = false
-    console.log(' [fetchTrades] Finalizado')
+    if (reset) page.value = 1
+
+    loading.value = true
+    error.value = null
+
+    try {
+      console.log('🌐 [fetchTrades] Chamando API /trades?page=' + page.value)
+      const response = await httpClient.get<TradesResponse>(`/trades?page=${page.value}&rpp=12`)
+      console.log('✅ [fetchTrades] Resposta:', response)
+
+      // 🔍 DEBUG: Estrutura do primeiro trade
+      if (response.list[0]) {
+        console.log('🔍 [fetchTrades] Primeiro trade completo:', response.list[0])
+        console.log('🔍 [fetchTrades] trade.user:', response.list[0].user)
+        console.log('🔍 [fetchTrades] trade.userId:', response.list[0].userId)
+      }
+
+      trades.value = reset ? response.list : [...trades.value, ...response.list]
+      more.value = response.more
+      console.log('✅ [fetchTrades] Trades:', trades.value.length, 'More:', more.value)
+    } catch (e) {
+      console.error('❌ [fetchTrades] Erro:', e)
+      error.value = 'Erro ao carregar solicitações. Tente novamente.'
+    } finally {
+      loading.value = false
+      console.log('🏁 [fetchTrades] Finalizado')
+    }
   }
-}
 
   async function deleteTrade(tradeId: string) {
     if (!confirm('Confirmar exclusão desta solicitação?')) return
@@ -111,7 +112,18 @@ export function useMarketplace() {
 
   function isOwner(trade: Trade): boolean {
   if (!authStore.isAuthenticated || !authStore.user) return false
-  return trade.user?.id === authStore.user.id
+  
+  // ✅ Usa trade.userId (não trade.user.id)
+  const tradeOwnerId = trade.userId
+  
+  console.log('🔍 [isOwner] Debug:', {
+    isAuthenticated: authStore.isAuthenticated,
+    userId: authStore.user.id,
+    tradeOwnerId,
+    isOwner: authStore.user.id === tradeOwnerId
+  })
+  
+  return authStore.user.id === tradeOwnerId
 }
 
   function formatDate(date: string) {
@@ -122,15 +134,15 @@ export function useMarketplace() {
     })
   }
 
-function getOfferedCard(trade: Trade) {
-  const offering = trade.tradeCards?.find(tc => tc.type === 'OFFERING')
-  return offering?.card || null
-}
+  function getOfferedCard(trade: Trade) {
+    const offering = trade.tradeCards?.find((tc) => tc.type === 'OFFERING')
+    return offering?.card || null
+  }
 
-function getRequestedCard(trade: Trade) {
-  const receiving = trade.tradeCards?.find(tc => tc.type === 'RECEIVING')
-  return receiving?.card || null
-}
+  function getRequestedCard(trade: Trade) {
+    const receiving = trade.tradeCards?.find((tc) => tc.type === 'RECEIVING')
+    return receiving?.card || null
+  }
 
   onMounted(() => {
     console.log('🟢 [useMarketplace] onMounted')
@@ -150,17 +162,17 @@ function getRequestedCard(trade: Trade) {
   })
 
   return {
-  trades,
-  loading,
-  error,
-  more,
-  deleting,
-  isOwner,
-  deleteTrade,
-  loadMore,
-  formatDate,
-  fetchTrades,
-  getOfferedCard,
-  getRequestedCard
-}
+    trades,
+    loading,
+    error,
+    more,
+    deleting,
+    isOwner,
+    deleteTrade,
+    loadMore,
+    formatDate,
+    fetchTrades,
+    getOfferedCard,
+    getRequestedCard,
+  }
 }
