@@ -25,7 +25,7 @@
         <PButton
           label="Tentar novamente"
           @click="refresh"
-          class="bg-gradient-to-r from-primary-600 to-primary-500 border-0"
+          class="bg-primary-600 border-0"
         />
       </template>
     </EmptyState>
@@ -34,7 +34,7 @@
       v-else-if="!cards?.length"
       title="Sua coleção está vazia"
       description="Comece adicionando cartas para criar trocas no marketplace"
-      icon="Vazio"
+      icon="pi pi-inbox"
     >
       <template #actions>
         <PButton
