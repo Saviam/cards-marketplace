@@ -1,6 +1,7 @@
 <template>
   <router-view />
   <PToast />
+  <ConfirmDialog></ConfirmDialog>
 </template>
 
 <script setup lang="ts">

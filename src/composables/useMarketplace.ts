@@ -4,8 +4,10 @@ import { httpClient } from '@/core/http/httpClient'
 import { useAuthStore } from '@/stores/auth.store'
 import { TOAST_LIFE_MS, API_RPP_DEFAULT } from '@/core/constants'
 import type { Trade, TradesListResponse, TradeCard, TradeCardType } from '@/types'
+import { useConfirm } from 'primevue/useconfirm'
 
 export function useMarketplace() {
+  const confirmDialog = useConfirm()
   const toast = useToast()
   const authStore = useAuthStore()
   
@@ -33,20 +35,42 @@ export function useMarketplace() {
     }
   }
 
-  async function deleteTrade(tradeId: string) {
-    if (!confirm('Confirmar exclusão desta solicitação?')) return
-    
-    deleting.value = tradeId
-    try {
-      await httpClient.delete(`/trades/${tradeId}`)
-      trades.value = trades.value.filter(t => t.id !== tradeId)
-      toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Solicitação excluída!', life: TOAST_LIFE_MS })
-    } catch (e) {
-      toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao excluir solicitação', life: TOAST_LIFE_MS })
-    } finally {
-      deleting.value = null
+ async function deleteTrade(tradeId: string) {
+  confirmDialog.require({
+    message: 'Deseja realmente excluir esta solicitação de troca?',
+    header: 'Confirmação de Exclusão',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Excluir',
+    rejectLabel: 'Cancelar',
+    acceptClass: 'bg-red-600 border-0',
+    rejectClass: 'bg-neutral-200 text-neutral-700 border-0',
+    accept: async () => {
+      deleting.value = tradeId
+      try {
+        await httpClient.delete(`/trades/${tradeId}`)
+        trades.value = trades.value.filter(t => t.id !== tradeId)
+        toast.add({ 
+          severity: 'success', 
+          summary: 'Sucesso', 
+          detail: 'Solicitação excluída com sucesso!', 
+          life: TOAST_LIFE_MS 
+        })
+      } catch (e) {
+        toast.add({ 
+          severity: 'error', 
+          summary: 'Erro', 
+          detail: 'Erro ao excluir solicitação', 
+          life: TOAST_LIFE_MS 
+        })
+      } finally {
+        deleting.value = null
+      }
+    },
+    reject: () => {
+      // Usuário cancelou
     }
-  }
+  })
+}
 
   function loadMore() {
     if (!loading.value && more.value) {

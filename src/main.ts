@@ -3,7 +3,7 @@ import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import Aura from '@primevue/themes/aura'
 import Tooltip from 'primevue/tooltip' 
-
+import ConfirmDialog from 'primevue/confirmdialog'
 
 import ToastService from 'primevue/toastservice'
 import ConfirmationService from 'primevue/confirmationservice'
@@ -62,6 +62,7 @@ app.component('PSkeleton', Skeleton)
 app.component('PTag', Tag)
 app.component('PAvatar', Avatar)
 app.component('EmptyState', EmptyState)
+app.component('ConfirmDialog', ConfirmDialog)
 
 console.log(' [main.ts] Componentes registrados')
 
