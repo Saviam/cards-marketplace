@@ -89,7 +89,7 @@
 import CardItem from '@/shared/components/CardItem.vue'
 import { useMarketplace } from '@/composables/useMarketplace'
 import LoadingSpinner from '@/shared/components/LoadingSpinner.vue'
-import HeroBanner from '@/shared/components/HeroBanner.vue'
+import HeroBanner from '@/shared/components/HeroBanner.vue' 
 
 const {
   trades,
