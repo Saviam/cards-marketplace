@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { httpClient } from '@/core/http/httpClient'
+import { DEBOUNCE_DELAY_MS, TOAST_LIFE_MS, API_RPP_MAX, API_RPP_SEARCH } from '@/core/constants'
 
 interface Card {
   id: string

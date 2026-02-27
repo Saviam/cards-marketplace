@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useAuthStore } from '@/stores/auth.store'
 import { authService } from '@/modules/auth/services/authService'
+import { TOAST_LIFE_MS } from '@/core/constants'
 
 export function useRegister() {
   const router = useRouter()

@@ -1,6 +1,14 @@
 import { ref, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { httpClient } from '@/core/http/httpClient'
+import { 
+  CACHE_EXPIRY_MS, 
+  DEBOUNCE_DELAY_MS, 
+  STORAGE_KEYS, 
+  TOAST_LIFE_MS, 
+  API_RPP_MAX,
+  API_RPP_SEARCH 
+} from '@/core/constants'
 
 interface Card {
   id: string
@@ -34,18 +42,17 @@ export function useMyCards() {
   let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
   async function fetchCards() {
-    const cacheKey = 'cards-marketplace:my-cards'
-    const cached = localStorage.getItem(cacheKey)
+    const cached = localStorage.getItem(STORAGE_KEYS.MY_CARDS)
     
     if (cached) {
       try {
         const entry = JSON.parse(cached)
-        if (Date.now() - entry.timestamp < 300000) {
+        if (Date.now() - entry.timestamp < CACHE_EXPIRY_MS) {
           cards.value = entry.cards
           return
         }
       } catch {
-        localStorage.removeItem(cacheKey)
+        localStorage.removeItem(STORAGE_KEYS.MY_CARDS)
       }
     }
 
@@ -55,7 +62,7 @@ export function useMyCards() {
     try {
       const result = await httpClient.get<Card[]>('/me/cards')
       cards.value = result
-      localStorage.setItem(cacheKey, JSON.stringify({ cards: result, timestamp: Date.now() }))
+      localStorage.setItem(STORAGE_KEYS.MY_CARDS, JSON.stringify({ cards: result, timestamp: Date.now() }))
     } catch (e) {
       error.value = 'Erro ao carregar suas cartas. Tente novamente.'
     } finally {
@@ -66,7 +73,7 @@ export function useMyCards() {
   async function loadAllAvailableCards() {
     searching.value = true
     try {
-      const response = await httpClient.get<CardsListResponse>('/cards?page=1&rpp=100')
+      const response = await httpClient.get<CardsListResponse>(`/cards?page=1&rpp=${API_RPP_MAX}`)
       availableCards.value = response.list
       selectedCards.value = []
     } catch (e) {
@@ -84,7 +91,7 @@ export function useMyCards() {
 
     searching.value = true
     try {
-      const response = await httpClient.get<CardsListResponse>('/cards?page=1&rpp=50')
+      const response = await httpClient.get<CardsListResponse>(`/cards?page=1&rpp=${API_RPP_SEARCH}`)
       availableCards.value = response.list.filter(c => 
         c.name.toLowerCase().includes(searchQuery.value.toLowerCase())
       )
@@ -98,7 +105,7 @@ export function useMyCards() {
 
   function debouncedSearch() {
     if (searchTimeout) clearTimeout(searchTimeout)
-    searchTimeout = setTimeout(searchAvailableCards, 300)
+    searchTimeout = setTimeout(searchAvailableCards, DEBOUNCE_DELAY_MS)
   }
 
   function toggleSelection(cardId: string) {
@@ -112,12 +119,12 @@ export function useMyCards() {
     adding.value = true
     try {
       await httpClient.post('/me/cards', { cardIds: selectedCards.value })
-      localStorage.removeItem('cards-marketplace:my-cards')
+      localStorage.removeItem(STORAGE_KEYS.MY_CARDS)
       await fetchCards()
       closeModal()
-      toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Carta(s) adicionada(s)!', life: 3000 })
+      toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Carta(s) adicionada(s)!', life: TOAST_LIFE_MS })
     } catch (e) {
-      toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar carta(s)', life: 3000 })
+      toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao adicionar carta(s)', life: TOAST_LIFE_MS })
     } finally {
       adding.value = false
     }

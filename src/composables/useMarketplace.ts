@@ -2,6 +2,7 @@ import { ref, onMounted, onActivated } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { httpClient } from '@/core/http/httpClient'
 import { useAuthStore } from '@/stores/auth.store'
+import { TOAST_LIFE_MS, API_RPP_DEFAULT } from '@/core/constants'
 
 interface Trade {
   id: string

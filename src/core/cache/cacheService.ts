@@ -1,5 +1,8 @@
+
+import { CACHE_EXPIRY_MS } from '../constants'
+
 const CACHE_PREFIX = 'cards-marketplace:'
-const CACHE_TTL = 5 * 60 * 1000 // 5 minutos
+const CACHE_TTL = CACHE_EXPIRY_MS
 
 interface CacheEntry<T> {
   data: T
