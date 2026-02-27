@@ -14,7 +14,7 @@ export interface Trade {
   createdAt: string
 }
 
-// Payload para criar troca
+// Payload pra criar troca
 export interface CreateTradePayload {
   cards: Array<{
     cardId: string

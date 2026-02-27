@@ -36,7 +36,7 @@ export interface AuthResponse {
   user: User
 }
 
-// Usuário
+
 export interface User {
   id: string
   name: string

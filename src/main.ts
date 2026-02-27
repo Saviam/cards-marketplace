@@ -49,7 +49,6 @@ app.directive('tooltip', Tooltip)
 app.use(ToastService)
 app.use(ConfirmationService)
 
-console.log('🔵 [main.ts] Registrando componentes PrimeVue...')
 
 //  Componentes globais
 app.component('PButton', Button)
@@ -64,6 +63,5 @@ app.component('PAvatar', Avatar)
 app.component('EmptyState', EmptyState)
 app.component('ConfirmDialog', ConfirmDialog)
 
-console.log(' [main.ts] Componentes registrados')
 
 app.mount('#app')

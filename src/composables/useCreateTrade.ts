@@ -71,8 +71,7 @@ export function useCreateTrade() {
     if (searchTimeout) clearTimeout(searchTimeout)
     searchTimeout = setTimeout(() => {
       if (type === 'offering') {
-        // Filtro local para minhas cartas
-        // (implementar se necessário)
+        
       } else {
         searchAvailableCards()
       }

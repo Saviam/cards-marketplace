@@ -28,7 +28,7 @@ export interface TradeCard {
 // Tipo da carta na troca (oferecendo ou recebendo)
 export type TradeCardType = 'OFFERING' | 'RECEIVING'
 
-// Payload para adicionar cartas
+// Payload pra adicionar cartas
 export interface AddCardsPayload {
   cardIds: string[]
 }

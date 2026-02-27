@@ -28,7 +28,7 @@ async function request<T>(
     ...options
   })
 
-  // 🔐 Interceptor: trata 401 (token expirado/inválido)
+  // Interceptor: trata 401 (token expirado/inválido)
   if (response.status === 401) {
     handleUnauthorized()
     throw new Error('Sessão expirada. Faça login novamente.')

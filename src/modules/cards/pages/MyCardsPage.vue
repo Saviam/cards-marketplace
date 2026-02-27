@@ -308,7 +308,7 @@ const {
 const currentIndex = ref(0)
 const detailModalVisible = ref(false)
 
-// ✅ Computed para carta atual (com type safety)
+
 const currentCard = computed(() => cards.value[currentIndex.value])
 
 function nextCard() {
@@ -327,7 +327,6 @@ function openDetailModal() {
   detailModalVisible.value = true
 }
 
-// Register Tooltip directive
 const vTooltip = Tooltip
 
 onMounted(() => { refresh() })

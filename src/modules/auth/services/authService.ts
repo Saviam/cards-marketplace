@@ -30,9 +30,9 @@ interface MeResponse {
 
 export const authService = {
  async register(payload: RegisterPayload) {
-  console.log('[DEBUG] Register payload:', payload)
+  
   const response = await httpClient.post<{ userId: string }>('/register', payload)
-  console.log('[DEBUG] Register response:', response)
+  
   return response
 },
   async login(payload: LoginPayload) {
@@ -43,8 +43,6 @@ export const authService = {
 
     try {
       const response = await httpClient.post<LoginResponse>('/login', payload)
-
-      console.log('[DEBUG] Login response:', response)
 
       if (!response.token || !response.user) {
         throw new Error('Resposta inválida da API')

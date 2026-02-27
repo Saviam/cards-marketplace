@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/auth.store'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const routes = [
-  // Rotas principais com layout
+ 
   {
     path: '/',
     component: MainLayout,
@@ -40,7 +40,7 @@ const routes = [
     ],
   },
 
-  // ← Rota 404: FORA do MainLayout, no nível raiz, POR ÚLTIMO
+
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
