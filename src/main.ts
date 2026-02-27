@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import Aura from '@primevue/themes/aura'
+import Tooltip from 'primevue/tooltip' 
 
 
 import ToastService from 'primevue/toastservice'
@@ -32,7 +33,6 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 
-// Configuração do PrimeVue 4
 app.use(PrimeVue, {
   theme: {
     preset: Aura,
@@ -44,6 +44,7 @@ app.use(PrimeVue, {
   }
 })
 
+app.directive('tooltip', Tooltip)
 //  Serviços (ordem importa!)
 app.use(ToastService)
 app.use(ConfirmationService)
@@ -62,6 +63,6 @@ app.component('PTag', Tag)
 app.component('PAvatar', Avatar)
 app.component('EmptyState', EmptyState)
 
-console.log('✅ [main.ts] Componentes registrados')
+console.log(' [main.ts] Componentes registrados')
 
 app.mount('#app')

@@ -1,10 +1,12 @@
 <template>
-  <div class="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto w-full">
+  <div class="px-4 sm:px-6 lg:px-8 py-8 max-w-5xl mx-auto w-full">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 text-center sm:text-left">
-      <h1 class="text-3xl font-bold text-neutral-900">Minhas Cartas</h1>
+      <div>
+        <h1 class="text-3xl font-bold text-neutral-900">Minhas Cartas</h1>
+        <p class="text-neutral-500 text-sm mt-1">{{ cards.length }} carta(s) na coleção</p>
+      </div>
       
-      <!-- ✅ ButtonItem para ação principal -->
       <ButtonItem
         variant="primary"
         size="md"
@@ -15,10 +17,10 @@
       </ButtonItem>
     </div>
 
-    <!-- Loading fullscreen -->
+    <!-- Loading -->
     <LoadingSpinner v-if="loading" fullscreen message="Carregando suas cartas..." />
 
-    <!-- Error state -->
+    <!-- Error -->
     <EmptyState
       v-else-if="error"
       title="Ops! Algo deu errado"
@@ -26,14 +28,13 @@
       icon="pi pi-exclamation-triangle"
     >
       <template #actions>
-        <!-- ✅ ButtonItem para ação de retry -->
         <ButtonItem variant="primary" @click="refresh">
           Tentar novamente
         </ButtonItem>
       </template>
     </EmptyState>
 
-    <!-- Empty state -->
+    <!-- Empty -->
     <EmptyState
       v-else-if="!cards?.length"
       title="Sua coleção está vazia"
@@ -41,40 +42,158 @@
       icon="pi pi-inbox"
     >
       <template #actions>
-        <!-- ✅ ButtonItem para CTA principal -->
         <ButtonItem variant="primary" @click="openModal">
           Adicionar Primeira Carta
         </ButtonItem>
       </template>
     </EmptyState>
 
-    <!-- Grid de cartas -->
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
-      <PCard
-        v-for="card in cards"
-        :key="card.id"
-        class="w-full max-w-sm hover:shadow-xl transition-all duration-300 border-0 rounded-xl overflow-hidden"
-      >
-        <template #header>
-          <div class="relative overflow-hidden">
-            <img
-              :src="card.imageUrl"
-              :alt="card.name"
-              class="w-full h-72 object-cover transform group-hover:scale-105 transition-transform duration-300"
-            />
+    <!-- Carousel + Thumbnails -->
+    <div v-else class="space-y-6">
+      <!-- Carta Principal (Carousel) -->
+      <div class="bg-white rounded-2xl shadow-xl shadow-neutral-200/50 border border-neutral-100 overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
+          <!-- Imagem -->
+          <div class="relative bg-gradient-to-br from-neutral-100 to-neutral-200 p-8 flex items-center justify-center">
+            <Transition name="fade-scale" mode="out-in">
+              <img
+                :key="currentCard?.id"
+                :src="currentCard?.imageUrl"
+                :alt="currentCard?.name"
+                class="w-full max-w-sm h-auto object-contain drop-shadow-2xl transition-transform duration-300 hover:scale-105"
+              />
+            </Transition>
+            
+            <!-- Navegação -->
+            <button
+              @click="prevCard"
+              class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-neutral-700 hover:text-primary-600 transition-all"
+              :disabled="currentIndex === 0"
+              :class="{ 'opacity-50 cursor-not-allowed': currentIndex === 0 }"
+            >
+              <i class="pi pi-chevron-left"></i>
+            </button>
+            <button
+              @click="nextCard"
+              class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-neutral-700 hover:text-primary-600 transition-all"
+              :disabled="currentIndex === cards.length - 1"
+              :class="{ 'opacity-50 cursor-not-allowed': currentIndex === cards.length - 1 }"
+            >
+              <i class="pi pi-chevron-right"></i>
+            </button>
           </div>
-        </template>
-        <template #title>
-          <h3 class="font-semibold text-neutral-900 text-lg line-clamp-1">{{ card.name }}</h3>
-        </template>
-        <template #content>
-          <div class="flex items-center gap-2 text-sm text-neutral-500">
-            <i class="pi pi-calendar text-xs"></i>
-            <span>Adicionada em {{ formatDate(card.createdAt) }}</span>
+
+          <!-- Detalhes -->
+          <div class="p-8 flex flex-col justify-center">
+            <Transition name="fade" mode="out-in">
+              <div :key="currentCard?.id" class="space-y-4" v-if="currentCard">
+                <div>
+                  <h2 class="text-2xl font-bold text-neutral-900">{{ currentCard.name }}</h2>
+                  <p class="text-neutral-500 text-sm mt-1">
+                    Adicionada em {{ formatDate(currentCard.createdAt) }}
+                  </p>
+                </div>
+
+                <div class="flex items-center gap-2 text-sm text-neutral-600">
+                  <i class="pi pi-id-card text-neutral-400" v-tooltip="'ID da Carta'"></i>
+                  <span class="font-mono text-xs">{{ currentCard.id.slice(0, 8) }}...</span>
+                </div>
+
+                <div>
+                  <h3 class="font-semibold text-neutral-700 text-sm mb-2">Descrição</h3>
+                  <p class="text-neutral-600 text-sm leading-relaxed">
+                    {{ currentCard.description || 'Sem descrição' }}
+                  </p>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                  <ButtonItem
+                    variant="primary"
+                    size="md"
+                    @click="openDetailModal"
+                    class="flex-1"
+                  >
+                    <i class="pi pi-eye"></i> Ver Detalhes
+                  </ButtonItem>
+                  <ButtonItem
+                    variant="secondary"
+                    size="md"
+                    @click="openModal"
+                    class="flex-1"
+                  >
+                    <i class="pi pi-plus"></i> Nova Troca
+                  </ButtonItem>
+                </div>
+              </div>
+            </Transition>
           </div>
-        </template>
-      </PCard>
+        </div>
+      </div>
+
+      <!-- Miniaturas -->
+      <div class="bg-white rounded-xl shadow-lg shadow-neutral-200/30 border border-neutral-100 p-4">
+        <h3 class="font-semibold text-neutral-700 text-sm mb-3 flex items-center gap-2">
+          <i class="pi pi-images text-neutral-400" v-tooltip="'Todas as cartas'"></i>
+          Sua Coleção
+        </h3>
+        <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+          <TransitionGroup name="list" tag="div" class="flex gap-3">
+            <button
+              v-for="(card, index) in cards"
+              :key="card.id"
+              @click="currentIndex = index"
+              class="flex-shrink-0 w-20 h-28 rounded-lg overflow-hidden border-2 transition-all duration-200 hover:scale-105"
+              :class="currentIndex === index ? 'border-primary-500 shadow-md' : 'border-neutral-200 hover:border-primary-300'"
+            >
+              <img :src="card.imageUrl" :alt="card.name" class="w-full h-full object-cover" />
+            </button>
+          </TransitionGroup>
+        </div>
+      </div>
     </div>
+
+    <!-- Modal de Detalhes -->
+    <PDialog
+      v-model:visible="detailModalVisible"
+      modal
+      header="Detalhes da Carta"
+      :style="{ width: '40rem' }"
+      :breakpoints="{ '768px': '95vw' }"
+      class="rounded-xl"
+    >
+      <div class="space-y-4" v-if="currentCard">
+        <div class="flex justify-center">
+          <img
+            :src="currentCard.imageUrl"
+            :alt="currentCard.name"
+            class="w-48 h-64 object-cover rounded-xl shadow-lg"
+          />
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-neutral-900">{{ currentCard.name }}</h3>
+          <p class="text-neutral-500 text-sm mt-1">
+            Adicionada em {{ formatDate(currentCard.createdAt) }}
+          </p>
+        </div>
+        <div>
+          <h4 class="font-semibold text-neutral-700 text-sm mb-2">Descrição</h4>
+          <p class="text-neutral-600 text-sm leading-relaxed">
+            {{ currentCard.description || 'Sem descrição' }}
+          </p>
+        </div>
+        <div class="flex items-center gap-2 text-sm text-neutral-500">
+          <i class="pi pi-id-card"></i>
+          <span class="font-mono text-xs">ID: {{ currentCard.id }}</span>
+        </div>
+      </div>
+      <template #footer>
+        <PButton
+          label="Fechar"
+          @click="detailModalVisible = false"
+          class="w-full rounded-lg"
+        />
+      </template>
+    </PDialog>
 
     <!-- Modal de Adicionar Carta -->
     <PDialog
@@ -96,7 +215,6 @@
         </div>
 
         <div v-if="searching" class="text-center py-8">
-          <!-- ✅ LoadingSpinner inline para busca -->
           <LoadingSpinner message="Buscando cartas..." />
         </div>
 
@@ -134,7 +252,6 @@
             <span class="text-primary-600 font-bold">{{ selectedCards.length }}</span> carta(s) selecionada(s)
           </span>
           <div class="flex gap-2 w-full sm:w-auto">
-            <!-- ✅ PButton secondary para cancelar (feature outlined do PrimeVue) -->
             <PButton
               label="Cancelar"
               severity="secondary"
@@ -142,7 +259,6 @@
               @click="closeModal"
               class="flex-1 sm:flex-none rounded-lg"
             />
-            <!-- ✅ ButtonItem para ação principal do modal -->
             <ButtonItem
               variant="primary"
               size="md"
@@ -163,11 +279,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onActivated } from 'vue'
+import { ref, computed, onMounted, onActivated } from 'vue'
 import ButtonItem from '@/shared/components/ButtonItem.vue'
 import LoadingSpinner from '@/shared/components/LoadingSpinner.vue'
 import CardItem from '@/shared/components/CardItem.vue'
 import { useMyCards } from '@/composables/useMyCards'
+import Tooltip from 'primevue/tooltip'
 
 const {
   cards,
@@ -188,33 +305,87 @@ const {
   formatDate
 } = useMyCards()
 
+const currentIndex = ref(0)
+const detailModalVisible = ref(false)
+
+// ✅ Computed para carta atual (com type safety)
+const currentCard = computed(() => cards.value[currentIndex.value])
+
+function nextCard() {
+  if (currentIndex.value < cards.value.length - 1) {
+    currentIndex.value++
+  }
+}
+
+function prevCard() {
+  if (currentIndex.value > 0) {
+    currentIndex.value--
+  }
+}
+
+function openDetailModal() {
+  detailModalVisible.value = true
+}
+
+// Register Tooltip directive
+const vTooltip = Tooltip
+
 onMounted(() => { refresh() })
 onActivated(() => { refresh() })
 </script>
 
 <style scoped>
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+/* Fade Transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
 }
 
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
-:deep(.p-dialog-header) {
-  border-radius: 14px 14px 0 0;
-  background: linear-gradient(135deg, #fafafa 0%, #f4f4f5 100%);
+/* Fade Scale Transition */
+.fade-scale-enter-active,
+.fade-scale-leave-active {
+  transition: all 0.4s ease;
 }
 
-:deep(.p-dialog-content) {
-  border-radius: 0 0 14px 14px;
+.fade-scale-enter-from,
+.fade-scale-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* List Transition (thumbnails) */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+/* Custom Scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 </style>
