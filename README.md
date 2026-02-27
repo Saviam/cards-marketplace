@@ -1,48 +1,78 @@
-# cards-marketplace
+#  CardsMarket
 
-This template should help get you started developing with Vue 3 in Vite.
+> Marketplace de troca de cartas desenvolvido com Vue 3, TypeScript e PrimeVue.
 
-## Recommended IDE Setup
+![Vue 3](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vue.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7.3-646CFF?logo=vite&logoColor=white)
+![PrimeVue](https://img.shields.io/badge/PrimeVue-4.5-00A68A?logo=prime&logoColor=white)
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+##  Sobre o Projeto
 
-## Recommended Browser Setup
+CardsMarket é uma plataforma web para troca de cartas entre jogadores. O sistema permite:
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+-  **Autenticação completa**: Registro, login e gestão de sessão com token JWT
+-  **Marketplace público**: Visualizar trocas disponíveis de outros usuários
+-  **Gerenciamento de coleção**: Adicionar, visualizar e organizar suas cartas
+-  **Criação de trocas**: Oferecer cartas e solicitar outras em troca
+-  **Design responsivo**: Experiência otimizada para desktop e mobile
+-  **UX moderna**: Bottom navigation, tooltips, transições suaves e confirmações elegantes
 
-## Type Support for `.vue` Imports in TS
+##  Tecnologias
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+| Categoria | Tecnologias |
+|-----------|------------|
+| **Frontend** | Vue 3, TypeScript, Vite |
+| **UI/UX** | PrimeVue, TailwindCSS, PrimeIcons |
+| **Estado** | Pinia (store) |
+| **Rotas** | Vue Router 5 |
+| **Qualidade** | ESLint, Oxlint, Prettier, vue-tsc |
+| **HTTP** | Axios (via httpClient abstraído) |
 
-## Customize configuration
+##  Como Rodar o Projeto
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+### Pré-requisitos
 
-## Project Setup
+- Node.js 20+ ou 22+
+- npm ou pnpm
 
-```sh
+### Instalação
+
+```bash
+# Instalar dependências
 npm install
-```
 
-### Compile and Hot-Reload for Development
-
-```sh
+# Rodar em desenvolvimento
 npm run dev
-```
 
-### Type-Check, Compile and Minify for Production
+# Acessar em: http://localhost:5173
 
-```sh
+# Comandos principais
+npm run dev      # Desenvolvimento (hot-reload)
+npm run build    # Build para produção
+npm run preview  # Preview do build local
+npm run lint     # Corrigir código (ESLint + Oxlint)
+npm run format   # Formatar com Prettier
+
+# Destaques
+ Autenticação JWT com refresh automático
+ Design responsivo: Desktop + Mobile (bottom nav)
+ Componentes reutilizáveis: CardItem, ButtonItem, LoadingSpinner
+ Tipagem TypeScript em todo o projeto
+ UX moderna: Tooltips, transições, confirmações elegantes
+
+# Estrutura principal
+src/
+├── composables/   # Lógica reutilizável (useMarketplace, etc.)
+├── modules/       # Features: auth, cards, trades
+├── shared/        # Componentes: CardItem, ButtonItem, HeroBanner
+├── stores/        # Pinia: auth.store
+├── types/         # Tipagem centralizada
+└── router/        # Rotas + guards de autenticação
+
+# Deploy 
 npm run build
-```
+# Deploy a pasta 'dist' em: Vercel, Netlify, Cloudflare Pages, ou servidor estático
 
-### Lint with [ESLint](https://eslint.org/)
 
-```sh
-npm run lint
-```
+
