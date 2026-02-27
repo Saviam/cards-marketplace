@@ -3,7 +3,7 @@
     <div class="text-center mb-10">
       <h1 class="text-4xl font-bold text-neutral-900 mb-3">Nova Troca</h1>
       <p class="text-neutral-500 text-lg max-w-2xl mx-auto">
-        Selecione a carta que você quer oferecer e a que deseja receber
+        Selecione as cartas que você quer oferecer e as que deseja receber
       </p>
     </div>
 
@@ -47,24 +47,16 @@
           </div>
 
           <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-80 overflow-y-auto pr-2">
-            <div
+            <CardItem
               v-for="card in myCards"
               :key="card.id"
-              class="relative border-2 rounded-xl cursor-pointer transition-all duration-200 overflow-hidden"
-              :class="selectedOffering.includes(card.id) ? 'border-primary-500 bg-primary-50 shadow-md' : 'border-neutral-200 hover:border-primary-300'"
+              :card="card"
+              :selectable="true"
+              :selected="selectedOffering.includes(card.id)"
+              :show-description="false"
+              :show-date="false"
               @click="toggleOffering(card.id)"
-            >
-              <img :src="card.imageUrl" :alt="card.name" class="w-full h-32 object-cover" />
-              <div class="p-2">
-                <p class="text-xs font-semibold text-neutral-900 line-clamp-1">{{ card.name }}</p>
-              </div>
-              <div
-                v-if="selectedOffering.includes(card.id)"
-                class="absolute top-2 right-2 w-6 h-6 bg-primary-600 rounded-full flex items-center justify-center text-white"
-              >
-                <i class="pi pi-check text-xs"></i>
-              </div>
-            </div>
+            />
           </div>
         </div>
       </div>
@@ -105,24 +97,16 @@
           </div>
 
           <div v-else-if="availableCards.length > 0" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto pr-2">
-            <div
+            <CardItem
               v-for="card in availableCards"
               :key="card.id"
-              class="relative border-2 rounded-xl cursor-pointer transition-all duration-200 overflow-hidden"
-              :class="selectedReceiving.includes(card.id) ? 'border-accent-500 bg-accent-50 shadow-md' : 'border-neutral-200 hover:border-accent-300'"
+              :card="card"
+              :selectable="true"
+              :selected="selectedReceiving.includes(card.id)"
+              :show-description="false"
+              :show-date="false"
               @click="toggleReceiving(card.id)"
-            >
-              <img :src="card.imageUrl" :alt="card.name" class="w-full h-32 object-cover" />
-              <div class="p-2">
-                <p class="text-xs font-semibold text-neutral-900 line-clamp-1">{{ card.name }}</p>
-              </div>
-              <div
-                v-if="selectedReceiving.includes(card.id)"
-                class="absolute top-2 right-2 w-6 h-6 bg-accent-500 rounded-full flex items-center justify-center text-white"
-              >
-                <i class="pi pi-check text-xs"></i>
-              </div>
-            </div>
+            />
           </div>
 
           <div v-else-if="searchReceivingQuery" class="text-center py-8">
@@ -161,6 +145,7 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import CardItem from '@/shared/components/CardItem.vue'
 import { useCreateTrade } from '@/composables/useCreateTrade'
 
 const {

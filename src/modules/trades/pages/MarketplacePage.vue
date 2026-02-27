@@ -12,34 +12,18 @@
       <p class="text-neutral-500 mt-4 font-medium">Carregando solicitações...</p>
     </div>
 
-    <EmptyState
-      v-else-if="error"
-      title="Ops! Algo deu errado"
-      :description="error"
-      icon="pi pi-exclamation-triangle"
-    >
+    <EmptyState v-else-if="error" title="Ops! Algo deu errado" :description="error" icon="pi pi-exclamation-triangle">
       <template #actions>
-        <PButton
-          label="Tentar novamente"
-          @click="fetchTrades(true)"
-          class="bg-primary-600 border-0"
-        />
+        <PButton label="Tentar novamente" @click="fetchTrades(true)" class="bg-primary-600 border-0" />
       </template>
     </EmptyState>
 
-    <EmptyState
-      v-else-if="!trades?.length"
-      title="Nenhuma solicitação disponível"
-      description="Novas trocas aparecerão aqui em breve"
-      icon="pi pi-inbox"
-    />
+    <EmptyState v-else-if="!trades?.length" title="Nenhuma solicitação disponível"
+      description="Novas trocas aparecerão aqui em breve" icon="pi pi-inbox" />
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
-      <PCard
-        v-for="trade in trades"
-        :key="trade.id"
-        class="w-full max-w-md hover:shadow-xl transition-all duration-300 border-0 rounded-xl overflow-hidden group"
-      >
+      <PCard v-for="trade in trades" :key="trade.id"
+        class="w-full max-w-md hover:shadow-xl transition-all duration-300 border-0 rounded-xl overflow-hidden">
         <template #header>
           <div class="bg-gradient-to-br from-primary-50 to-accent-50 p-6">
             <div class="flex items-center justify-between mb-4">
@@ -49,24 +33,14 @@
               </div>
               <span class="text-xs text-neutral-500">{{ formatDate(trade.createdAt) }}</span>
             </div>
-            
+
             <div class="flex items-center justify-between gap-4">
               <div class="flex-1 text-center">
-                <div class="relative mb-3">
-                  <img
-                    :src="getOfferedCard(trade)?.imageUrl || '/placeholder.jpg'"
-                    :alt="getOfferedCard(trade)?.name || 'Carta'"
-                    class="w-full h-40 object-cover rounded-lg shadow-md"
-                  />
-                  <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                    <span class="bg-primary-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                      Oferece
-                    </span>
-                  </div>
-                </div>
-                <h3 class="font-semibold text-neutral-900 text-sm line-clamp-1 mt-3">
-                  {{ getOfferedCard(trade)?.name || 'N/A' }}
-                </h3>
+                <CardItem v-if="getOfferedCard(trade)" :card="getOfferedCard(trade)!" :selected="false"
+                  :show-description="false" :show-date="false" />
+                <span class="inline-block mt-2 bg-primary-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  Oferece
+                </span>
               </div>
 
               <div class="flex items-center justify-center">
@@ -76,21 +50,11 @@
               </div>
 
               <div class="flex-1 text-center">
-                <div class="relative mb-3">
-                  <img
-                    :src="getRequestedCard(trade)?.imageUrl || '/placeholder.jpg'"
-                    :alt="getRequestedCard(trade)?.name || 'Carta'"
-                    class="w-full h-40 object-cover rounded-lg shadow-md"
-                  />
-                  <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                    <span class="bg-accent-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                      Quer
-                    </span>
-                  </div>
-                </div>
-                <h3 class="font-semibold text-neutral-900 text-sm line-clamp-1 mt-3">
-                  {{ getRequestedCard(trade)?.name || 'N/A' }}
-                </h3>
+                <CardItem v-if="getRequestedCard(trade)" :card="getRequestedCard(trade)!" :selected="false"
+                  :show-description="false" :show-date="false" />
+                <span class="inline-block mt-2 bg-accent-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  Quer
+                </span>
               </div>
             </div>
           </div>
@@ -103,15 +67,10 @@
               <span class="font-medium">{{ trade.user?.name || 'Usuário' }}</span>
             </div>
 
-            <div v-if="isOwner(trade)" class="flex gap-2 pt-2">
-              <PButton
-                label="Excluir"
-                severity="secondary"
-                size="small"
-                :loading="deleting === trade.id"
+            <div v-if="isOwner(trade)" class="flex gap-2 pt-2 border-t border-neutral-100">
+              <PButton label="Excluir" severity="custom" size="small" :loading="deleting === trade.id"
                 @click="deleteTrade(trade.id)"
-                class="flex-1 rounded-lg border-0"
-              />
+                class="flex-1 rounded-lg border-0 bg-accent-500 text-white hover:bg-accent-700 transition-colors duration-200" />
             </div>
           </div>
         </template>
@@ -119,12 +78,7 @@
     </div>
 
     <div v-if="more && !loading" class="text-center mt-10">
-      <PButton
-        label="Carregar mais"
-        severity="secondary"
-        @click="loadMore"
-        class="rounded-lg border-0"
-      />
+      <PButton label="Carregar mais" severity="secondary" @click="loadMore" class="rounded-lg border-0" />
     </div>
 
     <PToast />
@@ -132,6 +86,7 @@
 </template>
 
 <script setup lang="ts">
+import CardItem from '@/shared/components/CardItem.vue'
 import { useMarketplace } from '@/composables/useMarketplace'
 
 const {

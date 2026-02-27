@@ -98,7 +98,7 @@
 
     <footer class="bg-white border-t border-neutral-200 py-6 mt-auto">
       <div class="max-w-7xl mx-auto px-4 text-center text-sm text-neutral-500">
-        <p>&copy; 2025 CardsMarket. Todos os direitos reservados.</p>
+        <p>&copy; 2026 CardsMarket. Todos os direitos reservados.</p>
       </div>
     </footer>
 

@@ -1,24 +1,42 @@
 <template>
-  <div class="card-item" :class="{ selectable, selected }" @click="handleClick">
-    <img :src="card.imageUrl" :alt="card.name" class="card-image" />
-    <div class="card-content">
-      <h3 class="card-title">{{ card.name }}</h3>
-      <p v-if="showDescription" class="card-description">{{ card.description }}</p>
-      <p v-if="showDate" class="card-date">{{ formatDate(card.createdAt) }}</p>
+  <div class="relative border-2 rounded-xl overflow-hidden transition-all duration-200" :class="[
+    selectable ? 'cursor-pointer hover:border-primary-300 hover:shadow-md' : '',
+    selected ? 'border-primary-500 bg-primary-50 shadow-md' : 'border-neutral-200'
+  ]" @click="handleClick">
+    <div class="relative">
+      <img :src="card.imageUrl" :alt="card.name" class="w-full h-40 object-cover" />
+      <div v-if="selected"
+        class="absolute top-2 right-2 w-7 h-7 bg-primary-600 rounded-full flex items-center justify-center text-white shadow-lg">
+        <i class="pi pi-check text-xs"></i>
+      </div>
     </div>
-    <div v-if="selected" class="checkmark">✓</div>
+
+    <div class="p-3">
+      <h3 class="font-semibold text-neutral-900 text-sm line-clamp-1 mb-1">
+        {{ card.name }}
+      </h3>
+      <p v-if="showDescription" class="text-xs text-neutral-500 line-clamp-2 mb-2">
+        {{ card.description }}
+      </p>
+      <p v-if="showDate && card.createdAt" class="text-xs text-neutral-400 flex items-center gap-1">
+        <i class="pi pi-calendar text-xs"></i>
+        {{ formatDate(card.createdAt) }}
+      </p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+interface Card {
+  id: string
+  name: string
+  description: string
+  imageUrl: string
+  createdAt?: string
+}
+
 interface Props {
-  card: {
-    id: string
-    name: string
-    description: string
-    imageUrl: string
-    createdAt: string
-  }
+  card: Card
   selectable?: boolean
   selected?: boolean
   showDescription?: boolean
@@ -45,84 +63,28 @@ function handleClick() {
 }
 
 function formatDate(date: string) {
-  return new Date(date).toLocaleDateString('pt-BR')
+  return new Date(date).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  })
 }
 </script>
 
 <style scoped>
-.card-item {
-  border: 2px solid #ddd;
-  border-radius: 8px;
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  background: #fff;
-  transition: all 0.2s;
 }
 
-.card-item.selectable {
-  cursor: pointer;
-}
-
-.card-item.selectable:hover {
-  border-color: #4f46e5;
-  transform: translateY(-2px);
-}
-
-.card-item.selected {
-  border-color: #4f46e5;
-  background: #eef2ff;
-}
-
-.card-image {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  background: #f5f5f5;
-}
-
-.card-content {
-  padding: 0.75rem;
-}
-
-.card-title {
-  margin: 0 0 0.5rem 0;
-  font-size: 1rem;
-  color: #333;
-}
-
-.card-description {
-  margin: 0;
-  font-size: 0.875rem;
-  color: #666;
-  line-height: 1.4;
+.line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.card-date {
-  margin-top: 0.5rem;
-  font-size: 0.75rem;
-  color: #999;
-}
-
-.checkmark {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: #4f46e5;
-  color: white;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-
-.card-item.selected {
-  position: relative;
 }
 </style>

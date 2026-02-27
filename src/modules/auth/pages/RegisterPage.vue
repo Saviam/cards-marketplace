@@ -124,7 +124,7 @@
       </div>
 
       <p class="text-center text-xs text-neutral-400 mt-6">
-        © 2025 CardsMarket. Todos os direitos reservados.
+        © 2026 CardsMarket. Todos os direitos reservados.
       </p>
     </div>
 

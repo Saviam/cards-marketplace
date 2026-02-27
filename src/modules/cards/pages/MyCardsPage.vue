@@ -49,7 +49,7 @@
       <PCard
         v-for="card in cards"
         :key="card.id"
-        class="w-full max-w-sm hover:shadow-xl transition-all duration-300 border-0 rounded-xl overflow-hidden group"
+        class="w-full max-w-sm hover:shadow-xl transition-all duration-300 border-0 rounded-xl overflow-hidden"
       >
         <template #header>
           <div class="relative overflow-hidden">
@@ -58,7 +58,6 @@
               :alt="card.name"
               class="w-full h-72 object-cover transform group-hover:scale-105 transition-transform duration-300"
             />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </div>
         </template>
         <template #title>
@@ -100,33 +99,16 @@
           v-else-if="availableCards?.length"
           class="space-y-2 max-h-96 overflow-y-auto pr-2 px-2"
         >
-          <div
+          <CardItem
             v-for="card in availableCards"
             :key="card.id"
-            class="flex items-center gap-4 p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-md"
-            :class="selectedCards.includes(card.id) ? 'border-primary-500 bg-primary-50 shadow-md' : 'border-neutral-200 hover:border-primary-300'"
+            :card="card"
+            :selectable="true"
+            :selected="selectedCards.includes(card.id)"
+            :show-description="true"
+            :show-date="false"
             @click="toggleSelection(card.id)"
-          >
-            <img
-              :src="card.imageUrl"
-              :alt="card.name"
-              class="w-16 h-22 object-cover rounded-lg flex-shrink-0 shadow-sm"
-            />
-            <div class="flex-1 min-w-0">
-              <h4 class="font-semibold text-neutral-900 truncate">{{ card.name }}</h4>
-              <p class="text-sm text-neutral-500 line-clamp-2 mt-1">{{ card.description }}</p>
-            </div>
-            <div
-              v-if="selectedCards.includes(card.id)"
-              class="w-9 h-9 bg-gradient-to-r from-primary-600 to-primary-500 rounded-full flex items-center justify-center text-white flex-shrink-0 shadow-lg shadow-primary-500/30"
-            >
-              <i class="pi pi-check text-sm font-bold"></i>
-            </div>
-            <div
-              v-else
-              class="w-9 h-9 border-2 border-neutral-300 rounded-full flex-shrink-0"
-            ></div>
-          </div>
+          />
         </div>
 
         <EmptyState
@@ -175,6 +157,7 @@
 
 <script setup lang="ts">
 import { onMounted, onActivated } from 'vue'
+import CardItem from '@/shared/components/CardItem.vue'
 import { useMyCards } from '@/composables/useMyCards'
 
 const {
