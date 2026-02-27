@@ -1,12 +1,18 @@
 <template>
-  <div class="relative border-2 rounded-xl overflow-hidden transition-all duration-200" :class="[
-    selectable ? 'cursor-pointer hover:border-primary-300 hover:shadow-md' : '',
-    selected ? 'border-primary-500 bg-primary-50 shadow-md' : 'border-neutral-200'
-  ]" @click="handleClick">
+  <div
+    class="relative border-2 rounded-xl overflow-hidden transition-all duration-200"
+    :class="[
+      selectable ? 'cursor-pointer hover:border-primary-300 hover:shadow-md' : '',
+      selected ? 'border-primary-500 bg-primary-50 shadow-md' : 'border-neutral-200'
+    ]"
+    @click="handleClick"
+  >
     <div class="relative">
       <img :src="card.imageUrl" :alt="card.name" class="w-full h-40 object-cover" />
-      <div v-if="selected"
-        class="absolute top-2 right-2 w-7 h-7 bg-primary-600 rounded-full flex items-center justify-center text-white shadow-lg">
+      <div
+        v-if="selected"
+        class="absolute top-2 right-2 w-7 h-7 bg-primary-600 rounded-full flex items-center justify-center text-white shadow-lg"
+      >
         <i class="pi pi-check text-xs"></i>
       </div>
     </div>
@@ -27,13 +33,7 @@
 </template>
 
 <script setup lang="ts">
-interface Card {
-  id: string
-  name: string
-  description: string
-  imageUrl: string
-  createdAt?: string
-}
+import type { Card } from '@/types'
 
 interface Props {
   card: Card

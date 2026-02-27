@@ -1,34 +1,13 @@
 import { ref, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import { httpClient } from '@/core/http/httpClient'
-import { 
-  CACHE_EXPIRY_MS, 
-  DEBOUNCE_DELAY_MS, 
-  STORAGE_KEYS, 
-  TOAST_LIFE_MS, 
-  API_RPP_MAX,
-  API_RPP_SEARCH 
-} from '@/core/constants'
-
-interface Card {
-  id: string
-  name: string
-  description: string
-  imageUrl: string
-  createdAt: string
-}
-
-interface CardsListResponse {
-  list: Card[]
-  page: number
-  rpp: number
-  more: boolean
-}
+import { CACHE_EXPIRY_MS, DEBOUNCE_DELAY_MS, STORAGE_KEYS, TOAST_LIFE_MS, API_RPP_MAX, API_RPP_SEARCH } from '@/core/constants'
+import type { Card, UserCard, CardsListResponse, AddCardsPayload } from '@/types'
 
 export function useMyCards() {
   const toast = useToast()
   
-  const cards = ref<Card[]>([])
+  const cards = ref<UserCard[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
   
@@ -60,7 +39,7 @@ export function useMyCards() {
     error.value = null
 
     try {
-      const result = await httpClient.get<Card[]>('/me/cards')
+      const result = await httpClient.get<UserCard[]>('/me/cards')
       cards.value = result
       localStorage.setItem(STORAGE_KEYS.MY_CARDS, JSON.stringify({ cards: result, timestamp: Date.now() }))
     } catch (e) {
@@ -118,7 +97,8 @@ export function useMyCards() {
     
     adding.value = true
     try {
-      await httpClient.post('/me/cards', { cardIds: selectedCards.value })
+      const payload: AddCardsPayload = { cardIds: selectedCards.value }
+      await httpClient.post('/me/cards', payload)
       localStorage.removeItem(STORAGE_KEYS.MY_CARDS)
       await fetchCards()
       closeModal()

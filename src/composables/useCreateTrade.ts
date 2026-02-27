@@ -3,20 +3,7 @@ import { useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { httpClient } from '@/core/http/httpClient'
 import { DEBOUNCE_DELAY_MS, TOAST_LIFE_MS, API_RPP_MAX, API_RPP_SEARCH } from '@/core/constants'
-
-interface Card {
-  id: string
-  name: string
-  description: string
-  imageUrl: string
-}
-
-interface CardsListResponse {
-  list: Card[]
-  page: number
-  rpp: number
-  more: boolean
-}
+import type { Card, CardsListResponse, CreateTradePayload, TradeCardType } from '@/types'
 
 export function useCreateTrade() {
   const router = useRouter()
@@ -24,7 +11,6 @@ export function useCreateTrade() {
   
   const submitting = ref(false)
   const myCards = ref<Card[]>([])
-  const filteredMyCards = ref<Card[]>([])
   const availableCards = ref<Card[]>([])
   
   const selectedOffering = ref<string[]>([])
@@ -40,31 +26,20 @@ export function useCreateTrade() {
     try {
       const response = await httpClient.get<Card[]>('/me/cards')
       myCards.value = response
-      filteredMyCards.value = response
     } catch (e) {
       console.error('Erro ao buscar minhas cartas:', e)
       toast.add({
         severity: 'error',
         summary: 'Erro',
         detail: 'Erro ao carregar suas cartas',
-        life: 3000
+        life: TOAST_LIFE_MS
       })
     }
   }
 
-  function filterMyCards() {
-    if (!searchOfferingQuery.value.trim()) {
-      filteredMyCards.value = myCards.value
-      return
-    }
-    filteredMyCards.value = myCards.value.filter(c =>
-      c.name.toLowerCase().includes(searchOfferingQuery.value.toLowerCase())
-    )
-  }
-
   async function loadAllAvailableCards() {
     try {
-      const response = await httpClient.get<CardsListResponse>('/cards?page=1&rpp=100')
+      const response = await httpClient.get<CardsListResponse>(`/cards?page=1&rpp=${API_RPP_MAX}`)
       availableCards.value = response.list
     } catch (e) {
       console.error('Erro ao carregar cartas disponíveis:', e)
@@ -80,7 +55,7 @@ export function useCreateTrade() {
 
     searching.value = true
     try {
-      const response = await httpClient.get<CardsListResponse>('/cards?page=1&rpp=50')
+      const response = await httpClient.get<CardsListResponse>(`/cards?page=1&rpp=${API_RPP_SEARCH}`)
       availableCards.value = response.list.filter(c =>
         c.name.toLowerCase().includes(searchReceivingQuery.value.toLowerCase())
       )
@@ -96,91 +71,84 @@ export function useCreateTrade() {
     if (searchTimeout) clearTimeout(searchTimeout)
     searchTimeout = setTimeout(() => {
       if (type === 'offering') {
-        filterMyCards()
+        // Filtro local para minhas cartas
+        // (implementar se necessário)
       } else {
         searchAvailableCards()
       }
-    }, 300)
+    }, DEBOUNCE_DELAY_MS)
   }
 
   function toggleOffering(cardId: string) {
-  //  Seleção única: se já tem essa, remove; senão, limpa e adiciona essa
-  if (selectedOffering.value.includes(cardId)) {
-    selectedOffering.value = []
-  } else {
-    selectedOffering.value = [cardId]
+    if (selectedOffering.value.includes(cardId)) {
+      selectedOffering.value = []
+    } else {
+      selectedOffering.value = [cardId]
+    }
   }
-}
 
-function toggleReceiving(cardId: string) {
-  //  Seleção única: se já tem essa, remove; senão, limpa e adiciona essa
-  if (selectedReceiving.value.includes(cardId)) {
-    selectedReceiving.value = []
-  } else {
-    selectedReceiving.value = [cardId]
+  function toggleReceiving(cardId: string) {
+    if (selectedReceiving.value.includes(cardId)) {
+      selectedReceiving.value = []
+    } else {
+      selectedReceiving.value = [cardId]
+    }
   }
-}
 
   async function submitTrade() {
- if (selectedOffering.value.length !== 1 || selectedReceiving.value.length !== 1) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Atenção',
-      detail: 'Selecione exatamente 1 carta para oferecer e 1 para receber',
-      life: 3000
-    })
-    return
+    if (selectedOffering.value.length !== 1 || selectedReceiving.value.length !== 1) {
+      toast.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Selecione exatamente 1 carta para oferecer e 1 para receber',
+        life: TOAST_LIFE_MS
+      })
+      return
+    }
+
+    submitting.value = true
+    try {
+      const payload: CreateTradePayload = {
+        cards: [
+          { cardId: selectedOffering.value[0]!, type: 'OFFERING' as TradeCardType },
+          { cardId: selectedReceiving.value[0]!, type: 'RECEIVING' as TradeCardType }
+        ]
+      }
+      
+      await httpClient.post('/trades', payload)
+
+      toast.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Troca criada com sucesso!',
+        life: TOAST_LIFE_MS
+      })
+
+      router.push('/marketplace')
+    } catch (e) {
+      console.error('Erro ao criar troca:', e)
+      toast.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Erro ao criar troca. Tente novamente.',
+        life: TOAST_LIFE_MS
+      })
+    } finally {
+      submitting.value = false
+    }
   }
-
-  submitting.value = true
-  try {
-    
-    const tradeCards = [
-      ...selectedOffering.value.map(cardId => ({ cardId, type: 'OFFERING' })),
-      ...selectedReceiving.value.map(cardId => ({ cardId, type: 'RECEIVING' }))
-    ]
-
-    console.log('Enviando troca:', { cards: tradeCards })
-    
-    await httpClient.post('/trades', {
-      cards: tradeCards
-    })
-
-    console.log('Troca criada com sucesso!')
-
-    toast.add({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: 'Troca criada com sucesso!',
-      life: 3000
-    })
-
-    router.push('/marketplace')
-  } catch (e) {
-    console.error(' Erro ao criar troca:', e)
-    toast.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: 'Erro ao criar troca. Selecione uma carta diferente da que você já tenha.',
-      life: 5000
-    })
-  } finally {
-    submitting.value = false
-  }
-}
 
   function resetForm() {
     selectedOffering.value = []
     selectedReceiving.value = []
     searchOfferingQuery.value = ''
     searchReceivingQuery.value = ''
-    filteredMyCards.value = myCards.value
     availableCards.value = []
   }
 
   return {
     submitting,
-    myCards: filteredMyCards,
+    myCards,
     availableCards,
     selectedOffering,
     selectedReceiving,

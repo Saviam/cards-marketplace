@@ -3,36 +3,7 @@ import { useToast } from 'primevue/usetoast'
 import { httpClient } from '@/core/http/httpClient'
 import { useAuthStore } from '@/stores/auth.store'
 import { TOAST_LIFE_MS, API_RPP_DEFAULT } from '@/core/constants'
-
-interface Trade {
-  id: string
-  userId: string
-  user?: {
-    id?: string
-    name: string
-  }
-  tradeCards: Array<{
-    id: string
-    cardId: string
-    tradeId: string
-    type: 'OFFERING' | 'RECEIVING'
-    card: {
-      id: string
-      name: string
-      description: string
-      imageUrl: string
-    }
-  }>
-  status: string
-  createdAt: string
-}
-
-interface TradesResponse {
-  list: Trade[]
-  page: number
-  rpp: number
-  more: boolean
-}
+import type { Trade, TradesListResponse, TradeCard, TradeCardType } from '@/types'
 
 export function useMarketplace() {
   const toast = useToast()
@@ -52,7 +23,7 @@ export function useMarketplace() {
     error.value = null
 
     try {
-      const response = await httpClient.get<TradesResponse>(`/trades?page=${page.value}&rpp=${API_RPP_DEFAULT}`)
+      const response = await httpClient.get<TradesListResponse>(`/trades?page=${page.value}&rpp=${API_RPP_DEFAULT}`)
       trades.value = reset ? response.list : [...trades.value, ...response.list]
       more.value = response.more
     } catch (e) {
@@ -90,12 +61,12 @@ export function useMarketplace() {
   }
 
   function getOfferedCard(trade: Trade) {
-    const offering = trade.tradeCards?.find(tc => tc.type === 'OFFERING')
+    const offering = trade.tradeCards?.find((tc): tc is TradeCard & { type: 'OFFERING' } => tc.type === 'OFFERING')
     return offering?.card || null
   }
 
   function getRequestedCard(trade: Trade) {
-    const receiving = trade.tradeCards?.find(tc => tc.type === 'RECEIVING')
+    const receiving = trade.tradeCards?.find((tc): tc is TradeCard & { type: 'RECEIVING' } => tc.type === 'RECEIVING')
     return receiving?.card || null
   }
 
