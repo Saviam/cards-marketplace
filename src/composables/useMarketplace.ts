@@ -6,9 +6,9 @@ import { TOAST_LIFE_MS, API_RPP_DEFAULT } from '@/core/constants'
 
 interface Trade {
   id: string
-  userId: string  
+  userId: string
   user?: {
-    id?: string  
+    id?: string
     name: string
   }
   tradeCards: Array<{
@@ -35,11 +35,9 @@ interface TradesResponse {
 }
 
 export function useMarketplace() {
-  console.log('🔵 [useMarketplace] Composable iniciado')
-
   const toast = useToast()
   const authStore = useAuthStore()
-
+  
   const trades = ref<Trade[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
@@ -48,57 +46,32 @@ export function useMarketplace() {
   const deleting = ref<string | null>(null)
 
   async function fetchTrades(reset = false) {
-    console.log('🔵 [fetchTrades] Iniciando... reset:', reset)
-
     if (reset) page.value = 1
-
+    
     loading.value = true
     error.value = null
 
     try {
-      console.log('🌐 [fetchTrades] Chamando API /trades?page=' + page.value)
-      const response = await httpClient.get<TradesResponse>(`/trades?page=${page.value}&rpp=12`)
-      console.log('✅ [fetchTrades] Resposta:', response)
-
-      // 🔍 DEBUG: Estrutura do primeiro trade
-      if (response.list[0]) {
-        console.log('🔍 [fetchTrades] Primeiro trade completo:', response.list[0])
-        console.log('🔍 [fetchTrades] trade.user:', response.list[0].user)
-        console.log('🔍 [fetchTrades] trade.userId:', response.list[0].userId)
-      }
-
+      const response = await httpClient.get<TradesResponse>(`/trades?page=${page.value}&rpp=${API_RPP_DEFAULT}`)
       trades.value = reset ? response.list : [...trades.value, ...response.list]
       more.value = response.more
-      console.log('✅ [fetchTrades] Trades:', trades.value.length, 'More:', more.value)
     } catch (e) {
-      console.error('❌ [fetchTrades] Erro:', e)
       error.value = 'Erro ao carregar solicitações. Tente novamente.'
     } finally {
       loading.value = false
-      console.log('🏁 [fetchTrades] Finalizado')
     }
   }
 
   async function deleteTrade(tradeId: string) {
     if (!confirm('Confirmar exclusão desta solicitação?')) return
-
+    
     deleting.value = tradeId
     try {
       await httpClient.delete(`/trades/${tradeId}`)
-      trades.value = trades.value.filter((t) => t.id !== tradeId)
-      toast.add({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: 'Solicitação excluída!',
-        life: 3000,
-      })
+      trades.value = trades.value.filter(t => t.id !== tradeId)
+      toast.add({ severity: 'success', summary: 'Sucesso', detail: 'Solicitação excluída!', life: TOAST_LIFE_MS })
     } catch (e) {
-      toast.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: 'Erro ao excluir solicitação',
-        life: 3000,
-      })
+      toast.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao excluir solicitação', life: TOAST_LIFE_MS })
     } finally {
       deleting.value = null
     }
@@ -112,55 +85,30 @@ export function useMarketplace() {
   }
 
   function isOwner(trade: Trade): boolean {
-  if (!authStore.isAuthenticated || !authStore.user) return false
-  
-  // ✅ Usa trade.userId (não trade.user.id)
-  const tradeOwnerId = trade.userId
-  
-  console.log('🔍 [isOwner] Debug:', {
-    isAuthenticated: authStore.isAuthenticated,
-    userId: authStore.user.id,
-    tradeOwnerId,
-    isOwner: authStore.user.id === tradeOwnerId
-  })
-  
-  return authStore.user.id === tradeOwnerId
-}
+    if (!authStore.isAuthenticated || !authStore.user) return false
+    return authStore.user.id === trade.userId
+  }
+
+  function getOfferedCard(trade: Trade) {
+    const offering = trade.tradeCards?.find(tc => tc.type === 'OFFERING')
+    return offering?.card || null
+  }
+
+  function getRequestedCard(trade: Trade) {
+    const receiving = trade.tradeCards?.find(tc => tc.type === 'RECEIVING')
+    return receiving?.card || null
+  }
 
   function formatDate(date: string) {
     return new Date(date).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric',
+      year: 'numeric'
     })
   }
 
-  function getOfferedCard(trade: Trade) {
-    const offering = trade.tradeCards?.find((tc) => tc.type === 'OFFERING')
-    return offering?.card || null
-  }
-
-  function getRequestedCard(trade: Trade) {
-    const receiving = trade.tradeCards?.find((tc) => tc.type === 'RECEIVING')
-    return receiving?.card || null
-  }
-
-  onMounted(() => {
-    console.log('🟢 [useMarketplace] onMounted')
-    fetchTrades(true)
-  })
-
-  onActivated(() => {
-    console.log('🟢 [useMarketplace] onActivated')
-    fetchTrades(true)
-  })
-
-  console.log('🔵 [useMarketplace] Retornando:', {
-    trades: trades.value.length,
-    loading: loading.value,
-    error: error.value,
-    more: more.value,
-  })
+  onMounted(() => { fetchTrades(true) })
+  onActivated(() => { fetchTrades(true) })
 
   return {
     trades,
@@ -174,6 +122,6 @@ export function useMarketplace() {
     formatDate,
     fetchTrades,
     getOfferedCard,
-    getRequestedCard,
+    getRequestedCard
   }
 }

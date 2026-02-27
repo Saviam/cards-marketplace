@@ -134,19 +134,19 @@ function toggleReceiving(cardId: string) {
 
   submitting.value = true
   try {
-    // ✅ Formato correto que a API espera
+    
     const tradeCards = [
       ...selectedOffering.value.map(cardId => ({ cardId, type: 'OFFERING' })),
       ...selectedReceiving.value.map(cardId => ({ cardId, type: 'RECEIVING' }))
     ]
 
-    console.log('📤 Enviando troca:', { cards: tradeCards })
+    console.log('Enviando troca:', { cards: tradeCards })
     
     await httpClient.post('/trades', {
       cards: tradeCards
     })
 
-    console.log('✅ Troca criada com sucesso!')
+    console.log('Troca criada com sucesso!')
 
     toast.add({
       severity: 'success',
@@ -157,7 +157,7 @@ function toggleReceiving(cardId: string) {
 
     router.push('/marketplace')
   } catch (e) {
-    console.error('❌ Erro ao criar troca:', e)
+    console.error(' Erro ao criar troca:', e)
     toast.add({
       severity: 'error',
       summary: 'Erro',
