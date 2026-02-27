@@ -105,12 +105,17 @@
             </label>
           </div>
 
-          <PButton
+          <!-- ✅ ButtonItem no lugar de PButton -->
+          <ButtonItem
             type="submit"
-            label="Criar conta"
+            variant="primary"
+            size="lg"
             :loading="loading"
-            class="w-full py-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 border-0 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-300"
-          />
+            :disabled="loading || !acceptTerms"
+            class="w-full"
+          >
+            {{ loading ? 'Cadastrando...' : 'Criar conta' }}
+          </ButtonItem>
         </form>
 
         <div class="mt-6 pt-6 border-t border-neutral-100">
@@ -134,6 +139,7 @@
 
 <script setup lang="ts">
 import { useRegister } from '@/composables/useRegister'
+import ButtonItem from '@/shared/components/ButtonItem.vue'
 
 const {
   loading,

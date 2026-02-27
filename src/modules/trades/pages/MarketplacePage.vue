@@ -7,10 +7,11 @@
       </p>
     </div>
 
-    <div v-if="loading && trades.length === 0" class="text-center py-16">
-      <PProgressBar mode="indeterminate" class="h-1 max-w-md mx-auto" />
-      <p class="text-neutral-500 mt-4 font-medium">Carregando solicitações...</p>
-    </div>
+    <LoadingSpinner
+  v-if="loading && trades.length === 0"
+  fullscreen
+  message="Carregando solicitações..."
+/>
 
     <EmptyState v-else-if="error" title="Ops! Algo deu errado" :description="error" icon="pi pi-exclamation-triangle">
       <template #actions>
@@ -88,6 +89,7 @@
 <script setup lang="ts">
 import CardItem from '@/shared/components/CardItem.vue'
 import { useMarketplace } from '@/composables/useMarketplace'
+import LoadingSpinner from '@/shared/components/LoadingSpinner.vue'
 
 const {
   trades,

@@ -1,17 +1,17 @@
 <template>
   <component
     :is="tag"
-    class="btn"
+    class="inline-flex items-center justify-center gap-2 font-medium rounded-xl transition-all duration-200"
     :class="[
-      `btn-${variant}`,
-      `btn-${size}`,
-      { 'btn-loading': loading, 'btn-disabled': disabled }
+      variantClasses[variant],
+      sizeClasses[size],
+      { 'opacity-60 cursor-not-allowed': disabled || loading }
     ]"
     :disabled="disabled || loading"
     :type="type"
     :to="to"
   >
-    <span v-if="loading" class="btn-spinner"></span>
+    <i v-if="loading" class="pi pi-spin pi-spinner"></i>
     <slot />
   </component>
 </template>
@@ -35,91 +35,17 @@ withDefaults(defineProps<Props>(), {
   loading: false,
   disabled: false
 })
+
+const variantClasses: Record<string, string> = {
+  primary: 'bg-gradient-to-r from-primary-600 to-primary-500 text-white border-0 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40',
+  secondary: 'bg-white text-neutral-700 border-2 border-neutral-200 hover:border-primary-300 hover:bg-neutral-50',
+  danger: 'bg-gradient-to-r from-red-600 to-red-500 text-white border-0 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40',
+  ghost: 'bg-transparent text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 border-0'
+}
+
+const sizeClasses: Record<string, string> = {
+  sm: 'px-4 py-2 text-sm',
+  md: 'px-6 py-3 text-base',
+  lg: 'px-8 py-4 text-lg'
+}
 </script>
-
-<style scoped>
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-decoration: none;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background: #4f46e5;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #4338ca;
-}
-
-.btn-secondary {
-  background: white;
-  color: #374151;
-  border: 1px solid #d1d5db;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: #f9fafb;
-}
-
-.btn-danger {
-  background: #dc2626;
-  color: white;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background: #b91c1c;
-}
-
-.btn-ghost {
-  background: transparent;
-  color: #6b7280;
-}
-
-.btn-ghost:hover:not(:disabled) {
-  background: #f3f4f6;
-}
-
-.btn-sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-}
-
-.btn-md {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-}
-
-.btn-lg {
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
-}
-
-.btn-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: spin 0.75s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-</style>

@@ -1,20 +1,24 @@
 <template>
   <div class="px-4 sm:px-6 lg:px-8 py-8 max-w-7xl mx-auto w-full">
+    <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 text-center sm:text-left">
       <h1 class="text-3xl font-bold text-neutral-900">Minhas Cartas</h1>
-      <PButton
-        label="+ Adicionar Carta"
-        icon="pi pi-plus"
+      
+      <!-- ✅ ButtonItem para ação principal -->
+      <ButtonItem
+        variant="primary"
+        size="md"
         @click="openModal"
-        class="bg-gradient-to-r from-primary-600 to-primary-500 border-0 shadow-lg shadow-primary-500/30"
-      />
+        class="flex items-center gap-2"
+      >
+        <i class="pi pi-plus"></i> Adicionar Carta
+      </ButtonItem>
     </div>
 
-    <div v-if="loading" class="text-center py-16">
-      <PProgressBar mode="indeterminate" class="h-1 max-w-md mx-auto" />
-      <p class="text-neutral-500 mt-4 font-medium">Carregando suas cartas...</p>
-    </div>
+    <!-- Loading fullscreen -->
+    <LoadingSpinner v-if="loading" fullscreen message="Carregando suas cartas..." />
 
+    <!-- Error state -->
     <EmptyState
       v-else-if="error"
       title="Ops! Algo deu errado"
@@ -22,14 +26,14 @@
       icon="pi pi-exclamation-triangle"
     >
       <template #actions>
-        <PButton
-          label="Tentar novamente"
-          @click="refresh"
-          class="bg-primary-600 border-0"
-        />
+        <!-- ✅ ButtonItem para ação de retry -->
+        <ButtonItem variant="primary" @click="refresh">
+          Tentar novamente
+        </ButtonItem>
       </template>
     </EmptyState>
 
+    <!-- Empty state -->
     <EmptyState
       v-else-if="!cards?.length"
       title="Sua coleção está vazia"
@@ -37,14 +41,14 @@
       icon="pi pi-inbox"
     >
       <template #actions>
-        <PButton
-          label="Adicionar Primeira Carta"
-          @click="openModal"
-          class="bg-gradient-to-r from-primary-600 to-primary-500 border-0 shadow-lg shadow-primary-500/30"
-        />
+        <!-- ✅ ButtonItem para CTA principal -->
+        <ButtonItem variant="primary" @click="openModal">
+          Adicionar Primeira Carta
+        </ButtonItem>
       </template>
     </EmptyState>
 
+    <!-- Grid de cartas -->
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
       <PCard
         v-for="card in cards"
@@ -72,6 +76,7 @@
       </PCard>
     </div>
 
+    <!-- Modal de Adicionar Carta -->
     <PDialog
       v-model:visible="modalVisible"
       modal
@@ -91,14 +96,11 @@
         </div>
 
         <div v-if="searching" class="text-center py-8">
-          <PProgressBar mode="indeterminate" class="h-1 max-w-xs mx-auto" />
-          <p class="text-neutral-500 text-sm mt-3">Buscando cartas...</p>
+          <!-- ✅ LoadingSpinner inline para busca -->
+          <LoadingSpinner message="Buscando cartas..." />
         </div>
 
-        <div
-          v-else-if="availableCards?.length"
-          class="space-y-2 max-h-96 overflow-y-auto pr-2 px-2"
-        >
+        <div v-else-if="availableCards?.length" class="space-y-2 max-h-96 overflow-y-auto pr-2 px-2">
           <CardItem
             v-for="card in availableCards"
             :key="card.id"
@@ -132,6 +134,7 @@
             <span class="text-primary-600 font-bold">{{ selectedCards.length }}</span> carta(s) selecionada(s)
           </span>
           <div class="flex gap-2 w-full sm:w-auto">
+            <!-- ✅ PButton secondary para cancelar (feature outlined do PrimeVue) -->
             <PButton
               label="Cancelar"
               severity="secondary"
@@ -139,13 +142,17 @@
               @click="closeModal"
               class="flex-1 sm:flex-none rounded-lg"
             />
-            <PButton
-              label="Adicionar"
+            <!-- ✅ ButtonItem para ação principal do modal -->
+            <ButtonItem
+              variant="primary"
+              size="md"
               :disabled="!selectedCards.length"
               :loading="adding"
               @click="confirmAdd"
-              class="flex-1 sm:flex-none bg-gradient-to-r from-primary-600 to-primary-500 border-0 rounded-lg shadow-lg shadow-primary-500/30"
-            />
+              class="flex-1 sm:flex-none"
+            >
+              {{ adding ? 'Adicionando...' : 'Adicionar' }}
+            </ButtonItem>
           </div>
         </div>
       </template>
@@ -157,6 +164,8 @@
 
 <script setup lang="ts">
 import { onMounted, onActivated } from 'vue'
+import ButtonItem from '@/shared/components/ButtonItem.vue'
+import LoadingSpinner from '@/shared/components/LoadingSpinner.vue'
 import CardItem from '@/shared/components/CardItem.vue'
 import { useMyCards } from '@/composables/useMyCards'
 
@@ -179,13 +188,8 @@ const {
   formatDate
 } = useMyCards()
 
-onMounted(() => {
-  refresh()
-})
-
-onActivated(() => {
-  refresh()
-})
+onMounted(() => { refresh() })
+onActivated(() => { refresh() })
 </script>
 
 <style scoped>
