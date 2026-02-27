@@ -96,7 +96,7 @@
             <p class="text-neutral-500 text-sm mt-3">Buscando...</p>
           </div>
 
-          <div v-else-if="availableCards.length > 0" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-64 overflow-y-auto pr-2">
+          <div v-else-if="availableCards.length > 0" class="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-80 overflow-y-auto pr-2">
             <CardItem
               v-for="card in availableCards"
               :key="card.id"
