@@ -1,14 +1,20 @@
 <template>
   <div
-    class="relative border-2 rounded-xl overflow-hidden transition-all duration-200"
+    class="relative rounded-xl overflow-hidden transition-all duration-200"
     :class="[
+      borderless ? '' : 'border-2',
       selectable ? 'cursor-pointer hover:border-primary-300 hover:shadow-md' : '',
-      selected ? 'border-primary-500 bg-primary-50 shadow-md' : 'border-neutral-200'
+      selected ? 'border-primary-500 bg-primary-50 shadow-md' : (borderless ? '' : 'border-neutral-200')
     ]"
     @click="handleClick"
   >
     <div class="relative">
-      <img :src="card.imageUrl" :alt="card.name" class="w-full h-40 object-cover" />
+      <img 
+        :src="card.imageUrl" 
+        :alt="card.name" 
+        class="w-full h-40"
+        :class="contain ? 'object-contain' : 'object-cover'"
+      />
       <div
         v-if="selected"
         class="absolute top-2 right-2 w-7 h-7 bg-primary-600 rounded-full flex items-center justify-center text-white shadow-lg"
@@ -41,6 +47,8 @@ interface Props {
   selected?: boolean
   showDescription?: boolean
   showDate?: boolean
+  contain?: boolean
+  borderless?: boolean  // ← Adicionar isso
 }
 
 interface Emits {
@@ -51,7 +59,9 @@ const props = withDefaults(defineProps<Props>(), {
   selectable: false,
   selected: false,
   showDescription: false,
-  showDate: false
+  showDate: false,
+  contain: false,
+  borderless: false  // ← Default false
 })
 
 const emit = defineEmits<Emits>()

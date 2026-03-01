@@ -36,7 +36,7 @@
               <div class="flex items-center justify-between gap-4">
                 <div class="flex-1 text-center">
                   <CardItem v-if="getOfferedCard(trade)" :card="getOfferedCard(trade)!" :selected="false"
-                    :show-description="false" :show-date="false" />
+                    :show-description="false" :show-date="false" contain borderless /> 
                   <span class="inline-block mt-2 bg-primary-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                     Oferece
                   </span>
@@ -50,7 +50,7 @@
 
                 <div class="flex-1 text-center">
                   <CardItem v-if="getRequestedCard(trade)" :card="getRequestedCard(trade)!" :selected="false"
-                    :show-description="false" :show-date="false" />
+                    :show-description="false" :show-date="false" contain borderless/>
                   <span class="inline-block mt-2 bg-accent-500 text-white text-xs font-bold px-3 py-1 rounded-full">
                     Quer
                   </span>
