@@ -87,9 +87,11 @@
                   <ButtonItem variant="primary" size="md" @click="openDetailModal" class="flex-1">
                     <i class="pi pi-eye"></i> Ver Detalhes
                   </ButtonItem>
-                  <ButtonItem variant="secondary" size="md" @click="openModal" class="flex-1">
-                    <i class="pi pi-plus"></i> Nova Troca
-                  </ButtonItem>
+                  <router-link to="/nova-troca" class="flex-1">
+                    <ButtonItem variant="secondary" size="md" class="w-full">
+                      <i class="pi pi-exchange"></i> Nova Troca
+                    </ButtonItem>
+                  </router-link>
                 </div>
               </div>
             </Transition>
