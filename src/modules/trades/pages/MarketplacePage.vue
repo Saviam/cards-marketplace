@@ -79,8 +79,6 @@
       <div v-if="more && !loading" class="text-center mt-10">
         <PButton label="Carregar mais" severity="secondary" @click="loadMore" class="rounded-lg border-0" />
       </div>
-
-      <PToast />
     </div>
   </div>
 </template>

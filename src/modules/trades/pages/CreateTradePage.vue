@@ -138,8 +138,6 @@
         class="w-full sm:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 border-0 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-300"
       />
     </div>
-
-    <PToast />
   </div>
 </template>
 

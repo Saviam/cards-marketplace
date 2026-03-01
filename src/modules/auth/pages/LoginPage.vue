@@ -89,7 +89,7 @@
       </p>
     </div>
 
-    <PToast />
+    
   </div>
 </template>
 

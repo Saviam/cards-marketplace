@@ -193,8 +193,6 @@
         </div>
       </template>
     </PDialog>
-
-    <PToast />
   </div>
 </template>
 

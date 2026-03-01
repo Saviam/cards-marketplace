@@ -132,8 +132,6 @@
         © 2026 CardsMarket. Todos os direitos reservados.
       </p>
     </div>
-
-    <PToast />
   </div>
 </template>
 
