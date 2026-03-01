@@ -6,13 +6,8 @@
         <h1 class="text-3xl font-bold text-neutral-900">Minhas Cartas</h1>
         <p class="text-neutral-500 text-sm mt-1">{{ cards.length }} carta(s) na coleção</p>
       </div>
-      
-      <ButtonItem
-        variant="primary"
-        size="md"
-        @click="openModal"
-        class="flex items-center gap-2"
-      >
+
+      <ButtonItem variant="primary" size="md" @click="openModal" class="flex items-center gap-2">
         <i class="pi pi-plus"></i> Adicionar Carta
       </ButtonItem>
     </div>
@@ -21,12 +16,7 @@
     <LoadingSpinner v-if="loading" fullscreen message="Carregando suas cartas..." />
 
     <!-- Error -->
-    <EmptyState
-      v-else-if="error"
-      title="Ops! Algo deu errado"
-      :description="error"
-      icon="pi pi-exclamation-triangle"
-    >
+    <EmptyState v-else-if="error" title="Ops! Algo deu errado" :description="error" icon="pi pi-exclamation-triangle">
       <template #actions>
         <ButtonItem variant="primary" @click="refresh">
           Tentar novamente
@@ -35,12 +25,8 @@
     </EmptyState>
 
     <!-- Empty -->
-    <EmptyState
-      v-else-if="!cards?.length"
-      title="Sua coleção está vazia"
-      description="Comece adicionando cartas para criar trocas no marketplace"
-      icon="pi pi-inbox"
-    >
+    <EmptyState v-else-if="!cards?.length" title="Sua coleção está vazia"
+      description="Comece adicionando cartas para criar trocas no marketplace" icon="pi pi-inbox">
       <template #actions>
         <ButtonItem variant="primary" @click="openModal">
           Adicionar Primeira Carta
@@ -56,29 +42,20 @@
           <!-- Imagem -->
           <div class="relative bg-gradient-to-br from-neutral-100 to-neutral-200 p-8 flex items-center justify-center">
             <Transition name="fade-scale" mode="out-in">
-              <img
-                :key="currentCard?.id"
-                :src="currentCard?.imageUrl"
-                :alt="currentCard?.name"
-                class="w-full max-w-sm h-auto object-contain drop-shadow-2xl transition-transform duration-300 hover:scale-105"
-              />
+              <img :key="currentCard?.id" :src="currentCard?.imageUrl" :alt="currentCard?.name"
+                class="w-full max-w-sm h-auto object-contain drop-shadow-2xl transition-transform duration-300 hover:scale-105" />
             </Transition>
-            
+
             <!-- Navegação -->
-            <button
-              @click="prevCard"
+            <button @click="prevCard"
               class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-neutral-700 hover:text-primary-600 transition-all"
-              :disabled="currentIndex === 0"
-              :class="{ 'opacity-50 cursor-not-allowed': currentIndex === 0 }"
-            >
+              :disabled="currentIndex === 0" :class="{ 'opacity-50 cursor-not-allowed': currentIndex === 0 }">
               <i class="pi pi-chevron-left"></i>
             </button>
-            <button
-              @click="nextCard"
+            <button @click="nextCard"
               class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center text-neutral-700 hover:text-primary-600 transition-all"
               :disabled="currentIndex === cards.length - 1"
-              :class="{ 'opacity-50 cursor-not-allowed': currentIndex === cards.length - 1 }"
-            >
+              :class="{ 'opacity-50 cursor-not-allowed': currentIndex === cards.length - 1 }">
               <i class="pi pi-chevron-right"></i>
             </button>
           </div>
@@ -107,20 +84,10 @@
                 </div>
 
                 <div class="flex gap-3 pt-4">
-                  <ButtonItem
-                    variant="primary"
-                    size="md"
-                    @click="openDetailModal"
-                    class="flex-1"
-                  >
+                  <ButtonItem variant="primary" size="md" @click="openDetailModal" class="flex-1">
                     <i class="pi pi-eye"></i> Ver Detalhes
                   </ButtonItem>
-                  <ButtonItem
-                    variant="secondary"
-                    size="md"
-                    @click="openModal"
-                    class="flex-1"
-                  >
+                  <ButtonItem variant="secondary" size="md" @click="openModal" class="flex-1">
                     <i class="pi pi-plus"></i> Nova Troca
                   </ButtonItem>
                 </div>
@@ -138,13 +105,9 @@
         </h3>
         <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
           <TransitionGroup name="list" tag="div" class="flex gap-3">
-            <button
-              v-for="(card, index) in cards"
-              :key="card.id"
-              @click="currentIndex = index"
+            <button v-for="(card, index) in cards" :key="card.id" @click="currentIndex = index"
               class="flex-shrink-0 w-20 h-28 rounded-lg overflow-hidden border-2 transition-all duration-200 hover:scale-105"
-              :class="currentIndex === index ? 'border-primary-500 shadow-md' : 'border-neutral-200 hover:border-primary-300'"
-            >
+              :class="currentIndex === index ? 'border-primary-500 shadow-md' : 'border-neutral-200 hover:border-primary-300'">
               <img :src="card.imageUrl" :alt="card.name" class="w-full h-full object-cover" />
             </button>
           </TransitionGroup>
@@ -153,21 +116,12 @@
     </div>
 
     <!-- Modal de Detalhes -->
-    <PDialog
-      v-model:visible="detailModalVisible"
-      modal
-      header="Detalhes da Carta"
-      :style="{ width: '40rem' }"
-      :breakpoints="{ '768px': '95vw' }"
-      class="rounded-xl"
-    >
+    <PDialog v-model:visible="detailModalVisible" modal header="Detalhes da Carta" :style="{ width: '40rem' }"
+      :breakpoints="{ '768px': '95vw' }" class="rounded-xl">
       <div class="space-y-4" v-if="currentCard">
         <div class="flex justify-center">
-          <img
-            :src="currentCard.imageUrl"
-            :alt="currentCard.name"
-            class="w-48 h-64 object-cover rounded-xl shadow-lg"
-          />
+          <img :src="currentCard.imageUrl" :alt="currentCard.name"
+            class="w-48 h-64 object-cover rounded-xl shadow-lg" />
         </div>
         <div>
           <h3 class="text-xl font-bold text-neutral-900">{{ currentCard.name }}</h3>
@@ -187,31 +141,17 @@
         </div>
       </div>
       <template #footer>
-        <PButton
-          label="Fechar"
-          @click="detailModalVisible = false"
-          class="w-full rounded-lg"
-        />
+        <PButton label="Fechar" @click="detailModalVisible = false" class="w-full rounded-lg" />
       </template>
     </PDialog>
 
     <!-- Modal de Adicionar Carta -->
-    <PDialog
-      v-model:visible="modalVisible"
-      modal
-      header="Adicionar Carta"
-      :style="{ width: '50rem' }"
-      :breakpoints="{ '768px': '95vw' }"
-      class="rounded-xl"
-    >
+    <PDialog v-model:visible="modalVisible" modal header="Adicionar Carta" :style="{ width: '50rem' }"
+      :breakpoints="{ '768px': '95vw' }" class="rounded-xl">
       <div class="space-y-4 -mx-2">
         <div class="px-2">
-          <PInputText
-            v-model="searchQuery"
-            @input="debouncedSearch"
-            placeholder="Buscar cartas disponíveis..."
-            class="w-full rounded-lg"
-          />
+          <PInputText v-model="searchQuery" @input="debouncedSearch" placeholder="Buscar cartas disponíveis..."
+            class="w-full rounded-lg" />
         </div>
 
         <div v-if="searching" class="text-center py-8">
@@ -219,54 +159,32 @@
         </div>
 
         <div v-else-if="availableCards?.length" class="space-y-2 max-h-96 overflow-y-auto pr-2 px-2">
-          <CardItem
-            v-for="card in availableCards"
-            :key="card.id"
-            :card="card"
-            :selectable="true"
-            :selected="selectedCards.includes(card.id)"
-            :show-description="true"
-            :show-date="false"
-            @click="toggleSelection(card.id)"
-          />
+          <CardItem v-for="card in availableCards" :key="card.id" :card="card" :selectable="true"
+            :selected="selectedCards.includes(card.id)" :show-description="true" :show-date="false"
+            @click="toggleSelection(card.id)" />
         </div>
 
-        <EmptyState
-          v-else-if="searchQuery"
-          title="Nenhuma carta encontrada"
-          description="Tente buscar com outro termo"
-          icon="pi pi-search"
-        />
+        <EmptyState v-else-if="searchQuery" title="Nenhuma carta encontrada" description="Tente buscar com outro termo"
+          icon="pi pi-search" />
 
-        <EmptyState
-          v-else
-          title="Buscar cartas"
-          description="Digite para buscar cartas disponíveis no sistema"
-          icon="pi pi-search"
-        />
+        <EmptyState v-else title="Buscar cartas" description="Digite para buscar cartas disponíveis no sistema"
+          icon="pi pi-search" />
       </div>
 
       <template #footer>
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 w-full pt-4 border-t border-neutral-200">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-center gap-3 w-full pt-4 border-t border-neutral-200">
           <span class="text-sm text-neutral-500 font-medium">
             <span class="text-primary-600 font-bold">{{ selectedCards.length }}</span> carta(s) selecionada(s)
           </span>
           <div class="flex gap-2 w-full sm:w-auto">
-            <PButton
-              label="Cancelar"
-              severity="secondary"
-              outlined
-              @click="closeModal"
-              class="flex-1 sm:flex-none rounded-lg"
-            />
-            <ButtonItem
-              variant="primary"
-              size="md"
-              :disabled="!selectedCards.length"
-              :loading="adding"
-              @click="confirmAdd"
-              class="flex-1 sm:flex-none"
-            >
+            <!-- Cancelar também com ButtonItem -->
+            <ButtonItem variant="secondary" size="md" @click="closeModal" class="flex-1 sm:flex-none">
+              Cancelar
+            </ButtonItem>
+
+            <ButtonItem variant="primary" size="md" :disabled="!selectedCards.length" :loading="adding"
+              @click="confirmAdd" class="flex-1 sm:flex-none">
               {{ adding ? 'Adicionando...' : 'Adicionar' }}
             </ButtonItem>
           </div>

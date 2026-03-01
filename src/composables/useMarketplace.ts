@@ -35,15 +35,23 @@ export function useMarketplace() {
     }
   }
 
- async function deleteTrade(tradeId: string) {
+async function deleteTrade(tradeId: string) {
   confirmDialog.require({
     message: 'Deseja realmente excluir esta solicitação de troca?',
     header: 'Confirmação de Exclusão',
     icon: 'pi pi-exclamation-triangle',
     acceptLabel: 'Excluir',
     rejectLabel: 'Cancelar',
-    acceptClass: 'bg-red-600 border-0',
-    rejectClass: 'bg-neutral-200 text-neutral-700 border-0',
+    
+    acceptProps: {
+      severity: 'danger',  
+      outlined: false
+    },
+    rejectProps: {
+      severity: 'secondary',  
+      outlined: true
+    },
+
     accept: async () => {
       deleting.value = tradeId
       try {
